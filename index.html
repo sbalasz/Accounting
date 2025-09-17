@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Expense Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1><i class="fas fa-calculator"></i> Business Tracker</h1>
+            <div class="header-stats">
+                <span id="monthly-total">£0.00</span>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-tab="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-btn" data-tab="all-transactions">
+                <i class="fas fa-list"></i>
+                <span>All Transactions</span>
+            </button>
+            <button class="nav-btn" data-tab="receipts">
+                <i class="fas fa-camera"></i>
+                <span>Receipts</span>
+            </button>
+            <button class="nav-btn" data-tab="transactions">
+                <i class="fas fa-plus-circle"></i>
+                <span>Add Entry</span>
+            </button>
+            <button class="nav-btn" data-tab="export">
+                <i class="fas fa-download"></i>
+                <span>Export</span>
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div class="tab-content active" id="dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card income">
+                        <div class="stat-icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Income</h3>
+                            <p id="total-income">£0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card expenses">
+                        <div class="stat-icon">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Expenses</h3>
+                            <p id="total-expenses">£0.00</p>
+                        </div>
+                    </div>
+                    <div class="stat-card profit">
+                        <div class="stat-icon">
+                            <i class="fas fa-pound-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Net Profit</h3>
+                            <p id="net-profit">£0.00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Monthly Overview</h3>
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+
+                <div class="recent-transactions">
+                    <div class="section-header">
+                        <h3>Recent Transactions</h3>
+                        <div class="section-actions">
+                            <button class="btn-icon" id="search-transactions" title="Search Transactions">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button class="btn-icon" id="share-dashboard" title="Share Dashboard">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <button class="btn-icon" id="toggle-recent-selection" title="Select Multiple">
+                                <i class="fas fa-check-square"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bulk-actions" id="recent-bulk-actions" style="display: none;">
+                        <div class="bulk-controls">
+                            <button class="btn-secondary" id="select-all-recent">
+                                <i class="fas fa-check-double"></i> Select All
+                            </button>
+                            <button class="btn-secondary" id="clear-selection-recent">
+                                <i class="fas fa-times"></i> Clear Selection
+                            </button>
+                            <span class="selection-count" id="recent-selection-count">0 selected</span>
+                        </div>
+                        <div class="bulk-action-buttons">
+                            <button class="btn-warning" id="bulk-edit-recent">
+                                <i class="fas fa-edit"></i> Edit Selected
+                            </button>
+                            <button class="btn-danger" id="bulk-delete-recent">
+                                <i class="fas fa-trash"></i> Delete Selected
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="recent-list">
+                        <p class="no-data">No transactions yet. Start by adding some entries!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Transactions Tab -->
+            <div class="tab-content" id="all-transactions">
+                <div class="transactions-management">
+                    <div class="section-header">
+                        <h2>All Transactions</h2>
+                        <div class="section-actions">
+                            <button class="btn-icon" id="filter-all-transactions" title="Filter Transactions">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                            <button class="btn-icon" id="backup-all-data" title="Backup Data">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </button>
+                            <button class="btn-icon" id="toggle-all-selection" title="Select Multiple">
+                                <i class="fas fa-check-square"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bulk-actions" id="all-bulk-actions" style="display: none;">
+                        <div class="bulk-controls">
+                            <button class="btn-secondary" id="select-all-all">
+                                <i class="fas fa-check-double"></i> Select All
+                            </button>
+                            <button class="btn-secondary" id="clear-selection-all">
+                                <i class="fas fa-times"></i> Clear Selection
+                            </button>
+                            <span class="selection-count" id="all-selection-count">0 selected</span>
+                        </div>
+                        <div class="bulk-action-buttons">
+                            <button class="btn-warning" id="bulk-edit-all">
+                                <i class="fas fa-edit"></i> Edit Selected
+                            </button>
+                            <button class="btn-danger" id="bulk-delete-all">
+                                <i class="fas fa-trash"></i> Delete Selected
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-bar" id="all-filter-bar" style="display: none;">
+                        <div class="filter-inputs">
+                            <select id="all-filter-type">
+                                <option value="">All Types</option>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                            <select id="all-filter-category">
+                                <option value="">All Categories</option>
+                            </select>
+                            <input type="text" id="all-filter-search" placeholder="Search description...">
+                            <button class="btn-secondary" id="clear-all-filters">Clear</button>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-summary">
+                        <div class="summary-card">
+                            <div class="summary-info">
+                                <span class="summary-label">Total Transactions</span>
+                                <span class="summary-value" id="total-transactions-count">0</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-info">
+                                <span class="summary-label">With Images</span>
+                                <span class="summary-value" id="transactions-with-images">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="all-transactions-list">
+                        <div id="all-transactions-container">
+                            <p class="no-data">No transactions added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipts Tab -->
+            <div class="tab-content" id="receipts">
+                <div class="receipt-upload">
+                    <h2>Upload Receipt</h2>
+                    <div class="upload-area" id="upload-area">
+                        <i class="fas fa-camera"></i>
+                        <p>Tap to take photo or upload receipt</p>
+                        <input type="file" id="receipt-input" accept="image/*" capture="environment" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                    </div>
+                    
+                    <div class="receipt-form" id="receipt-form" style="display: none;">
+                        <div class="form-group">
+                            <label for="receipt-amount">Amount (£)</label>
+                            <input type="number" id="receipt-amount" step="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="receipt-category">Category</label>
+                            <select id="receipt-category" required>
+                                <option value="">Select category</option>
+                                <option value="office-supplies">Office Supplies</option>
+                                <option value="travel">Travel & Transport</option>
+                                <option value="meals">Meals & Entertainment</option>
+                                <option value="utilities">Utilities</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="professional-services">Professional Services</option>
+                                <option value="equipment">Equipment</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="receipt-description">Description</label>
+                            <input type="text" id="receipt-description" placeholder="Brief description">
+                        </div>
+                        <div class="form-group">
+                            <label for="receipt-date">Date</label>
+                            <input type="date" id="receipt-date" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" id="cancel-receipt">Cancel</button>
+                            <button type="button" class="btn-primary" id="save-receipt">Save Receipt</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="receipts-list">
+                    <h3>Saved Receipts</h3>
+                    <div id="receipts-container">
+                        <p class="no-data">No receipts uploaded yet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div class="tab-content" id="transactions">
+                <div class="transaction-form">
+                    <h2>Add Transaction</h2>
+                    
+                    <div class="transaction-type-toggle">
+                        <button class="type-btn active" data-type="expense">
+                            <i class="fas fa-minus"></i> Expense
+                        </button>
+                        <button class="type-btn" data-type="income">
+                            <i class="fas fa-plus"></i> Income
+                        </button>
+                    </div>
+
+                    <form id="transaction-form">
+                        <div class="form-group">
+                            <label for="trans-amount">Amount (£)</label>
+                            <input type="number" id="trans-amount" step="0.01" placeholder="0.00" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="trans-category">Category</label>
+                            <select id="trans-category" required>
+                                <!-- Options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="trans-description">Description</label>
+                            <input type="text" id="trans-description" placeholder="Brief description" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="trans-date">Date</label>
+                            <input type="date" id="trans-date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="trans-payment-method">Payment Method</label>
+                            <select id="trans-payment-method">
+                                <option value="cash">Cash</option>
+                                <option value="card">Debit/Credit Card</option>
+                                <option value="bank-transfer">Bank Transfer</option>
+                                <option value="cheque">Cheque</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary btn-full">
+                            <i class="fas fa-save"></i> Save Transaction
+                        </button>
+                    </form>
+                </div>
+
+                <!-- All Transactions moved to dedicated tab -->
+            </div>
+
+            <!-- Export Tab -->
+            <div class="tab-content" id="export">
+                <div class="export-section">
+                    <h2>Export Data</h2>
+                    <p>Share your financial data with your accountant</p>
+                    
+                    <div class="export-options">
+                        <div class="export-card">
+                            <i class="fas fa-file-csv"></i>
+                            <h3>CSV Export</h3>
+                            <p>Download all transactions as CSV file</p>
+                            <button class="btn-primary" id="export-csv">
+                                <i class="fas fa-download"></i> Download CSV
+                            </button>
+                        </div>
+                        
+                        <div class="export-card">
+                            <i class="fas fa-file-pdf"></i>
+                            <h3>Summary Report</h3>
+                            <p>Generate a summary report with totals</p>
+                            <button class="btn-primary" id="export-summary">
+                                <i class="fas fa-file-alt"></i> Generate Report
+                            </button>
+                        </div>
+                        
+                        <div class="export-card">
+                            <i class="fas fa-share"></i>
+                            <h3>Share Receipts</h3>
+                            <p>Create a zip file of all receipt images</p>
+                            <button class="btn-primary" id="share-receipts">
+                                <i class="fas fa-images"></i> Package Receipts
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="date-filter">
+                        <h3>Filter by Date Range</h3>
+                        <div class="date-inputs">
+                            <div class="form-group">
+                                <label for="export-from">From Date</label>
+                                <input type="date" id="export-from">
+                            </div>
+                            <div class="form-group">
+                                <label for="export-to">To Date</label>
+                                <input type="date" id="export-to">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Search Modal -->
+    <div class="modal" id="search-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Search Transactions</h3>
+                <button class="modal-close" id="close-search-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" id="search-input" placeholder="Search by description, amount, or category...">
+                </div>
+                <div id="search-results">
+                    <p class="no-data">Start typing to search transactions...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup/Restore Modal -->
+    <div class="modal" id="backup-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Data Backup & Restore</h3>
+                <button class="modal-close" id="close-backup-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="backup-options">
+                    <div class="backup-card">
+                        <i class="fas fa-download"></i>
+                        <h4>Backup Data</h4>
+                        <p>Download all your data as a backup file</p>
+                        <button class="btn-primary" id="download-backup">
+                            <i class="fas fa-download"></i> Download Backup
+                        </button>
+                    </div>
+                    <div class="backup-card">
+                        <i class="fas fa-upload"></i>
+                        <h4>Restore Data</h4>
+                        <p>Upload a backup file to restore your data</p>
+                        <input type="file" id="restore-input" accept=".json" style="display: none;">
+                        <button class="btn-secondary" id="upload-backup">
+                            <i class="fas fa-upload"></i> Upload Backup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal" id="share-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Dashboard</h3>
+                <button class="modal-close" id="close-share-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <button class="btn-primary share-option" id="share-summary">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Share Summary</span>
+                    </button>
+                    <button class="btn-primary share-option" id="share-transactions">
+                        <i class="fas fa-list"></i>
+                        <span>Share Transactions</span>
+                    </button>
+                    <button class="btn-primary share-option" id="share-receipts">
+                        <i class="fas fa-camera"></i>
+                        <span>Share Receipts</span>
+                    </button>
+                    <button class="btn-primary share-option" id="share-url">
+                        <i class="fas fa-link"></i>
+                        <span>Copy App URL</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details Modal -->
+    <div class="modal" id="transaction-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Transaction Details</h3>
+                <button class="modal-close" id="close-transaction-details">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="transaction-details-content">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Edit Modal -->
+    <div class="modal" id="bulk-edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Selected Transactions</h3>
+                <button class="modal-close" id="close-bulk-edit-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="bulk-edit-info">
+                    <p><strong id="bulk-edit-count">0</strong> transactions selected for editing</p>
+                </div>
+                <form id="bulk-edit-form">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="bulk-edit-type-checkbox"> Update Type
+                        </label>
+                        <select id="bulk-edit-type" disabled>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="bulk-edit-category-checkbox"> Update Category
+                        </label>
+                        <select id="bulk-edit-category" disabled>
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="bulk-edit-date-checkbox"> Update Date
+                        </label>
+                        <input type="date" id="bulk-edit-date" disabled>
+                    </div>
+                    <div class="bulk-edit-actions">
+                        <button type="button" class="btn-secondary" id="cancel-bulk-edit">Cancel</button>
+                        <button type="submit" class="btn-primary">Apply Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
