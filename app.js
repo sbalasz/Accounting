@@ -1,4 +1,10 @@
 // Business Expense Tracker Application
+
+// Authentication check
+if (sessionStorage.getItem('authenticated') !== 'true') {
+    window.location.href = 'auth.html';
+}
+
 class ExpenseTracker {
     constructor() {
         console.log('ExpenseTracker constructor called');
@@ -178,6 +184,11 @@ class ExpenseTracker {
 
         document.getElementById('reset-settings').addEventListener('click', () => {
             this.resetSettings();
+        });
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            this.logout();
         });
 
         // Export functions
@@ -1267,6 +1278,17 @@ class ExpenseTracker {
             this.loadAppSettings();
             
             this.showToast('Settings reset successfully', 'success');
+        }
+    }
+
+    logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            // Clear authentication
+            sessionStorage.removeItem('authenticated');
+            sessionStorage.removeItem('accessCode');
+            
+            // Redirect to auth page
+            window.location.href = 'auth.html';
         }
     }
 

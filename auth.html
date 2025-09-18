@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Tracker - Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .auth-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .error {
+            color: #ef4444;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #fef2f2;
+            border-radius: 6px;
+            border: 1px solid #fecaca;
+            display: none;
+        }
+        
+        .authorized-users {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .authorized-users h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-list {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .user-list li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .user-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">📊</div>
+        <h1>Business Tracker</h1>
+        <p class="subtitle">Enter your access code to continue</p>
+        
+        <form id="authForm">
+            <div class="form-group">
+                <label for="accessCode">Access Code</label>
+                <input type="password" id="accessCode" placeholder="Enter your access code" required>
+            </div>
+            <button type="submit" class="btn">Access Application</button>
+        </form>
+        
+        <div id="error" class="error"></div>
+        
+        <div class="authorized-users">
+            <h3>Authorized Users</h3>
+            <ul class="user-list" id="userList">
+                <li>Contact administrator for access code</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simple access control
+        const authorizedCodes = [
+            'admin2024',
+            'user123',
+            'accounting2024'
+        ];
+        
+        const authForm = document.getElementById('authForm');
+        const errorDiv = document.getElementById('error');
+        const userList = document.getElementById('userList');
+        
+        // Update user list
+        userList.innerHTML = authorizedCodes.map(code => 
+            `<li>Access Code: ${code}</li>`
+        ).join('');
+        
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const accessCode = document.getElementById('accessCode').value;
+            
+            if (authorizedCodes.includes(accessCode)) {
+                // Store access in sessionStorage
+                sessionStorage.setItem('authenticated', 'true');
+                sessionStorage.setItem('accessCode', accessCode);
+                
+                // Redirect to main app
+                window.location.href = 'index.html';
+            } else {
+                errorDiv.textContent = 'Invalid access code. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        });
+        
+        // Check if already authenticated
+        if (sessionStorage.getItem('authenticated') === 'true') {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
