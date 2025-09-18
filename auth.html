@@ -149,29 +149,19 @@
         <div id="error" class="error"></div>
         
         <div class="authorized-users">
-            <h3>Authorized Users</h3>
-            <ul class="user-list" id="userList">
-                <li>Contact administrator for access code</li>
-            </ul>
+            <h3>Access Required</h3>
+            <p>Contact the administrator for access to this application.</p>
         </div>
     </div>
 
     <script>
         // Simple access control
         const authorizedCodes = [
-            'admin2024',
-            'user123',
-            'accounting2024'
+            'Admin1905'
         ];
         
         const authForm = document.getElementById('authForm');
         const errorDiv = document.getElementById('error');
-        const userList = document.getElementById('userList');
-        
-        // Update user list
-        userList.innerHTML = authorizedCodes.map(code => 
-            `<li>Access Code: ${code}</li>`
-        ).join('');
         
         authForm.addEventListener('submit', (e) => {
             e.preventDefault();

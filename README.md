@@ -6,14 +6,9 @@ A comprehensive web-based accounting application for tracking business expenses,
 
 **Access the application**: [https://sbalasz.github.io/Accounting](https://sbalasz.github.io/Accounting)
 
-## 🔐 Access Codes
+## 🔐 Access Control
 
-The application is protected with access codes. Contact the administrator for your access code.
-
-**Default Access Codes** (for testing):
-- `admin2024` - Administrator access
-- `user123` - Standard user access  
-- `accounting2024` - Accounting team access
+The application is protected with an access code. Contact the administrator for access.
 
 ## ✨ Features
 
