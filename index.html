@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Business Expense Tracker</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20250118">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" rel="stylesheet">
 </head>
@@ -26,15 +29,15 @@
             </button>
             <button class="nav-btn" data-tab="all-transactions">
                 <i class="fas fa-list"></i>
-                <span>All Transactions</span>
+                <span>Transactions</span>
             </button>
             <button class="nav-btn" data-tab="receipts">
                 <i class="fas fa-camera"></i>
                 <span>Receipts</span>
             </button>
-            <button class="nav-btn" data-tab="transactions">
-                <i class="fas fa-plus-circle"></i>
-                <span>Add Entry</span>
+            <button class="nav-btn" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
             </button>
             <button class="nav-btn" data-tab="export">
                 <i class="fas fa-download"></i>
@@ -127,18 +130,25 @@
             <div class="tab-content" id="all-transactions">
                 <div class="transactions-management">
                     <div class="section-header">
-                        <h2>All Transactions</h2>
-                        <div class="section-actions">
-                            <button class="btn-icon" id="filter-all-transactions" title="Filter Transactions">
-                                <i class="fas fa-filter"></i>
-                            </button>
-                            <button class="btn-icon" id="backup-all-data" title="Backup Data">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                            </button>
-                            <button class="btn-icon" id="toggle-all-selection" title="Select Multiple">
-                                <i class="fas fa-check-square"></i>
-                            </button>
-                        </div>
+                        <h2>Transactions</h2>
+                    </div>
+                    
+                    <div class="section-actions">
+                        <button class="btn-icon primary" id="all-add-transaction-btn" title="Add Transaction">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="btn-icon" id="all-camera-btn" title="Take Receipt Photo">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                        <button class="btn-icon" id="filter-all-transactions" title="Filter Transactions">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                        <button class="btn-icon" id="backup-all-data" title="Backup Data">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </button>
+                        <button class="btn-icon" id="toggle-all-selection" title="Select Multiple">
+                            <i class="fas fa-check-square"></i>
+                        </button>
                     </div>
                     
                     <div class="bulk-actions" id="all-bulk-actions" style="display: none;">
@@ -176,19 +186,112 @@
                         </div>
                     </div>
                     
-                    <div class="stats-summary">
-                        <div class="summary-card">
-                            <div class="summary-info">
-                                <span class="summary-label">Total Transactions</span>
-                                <span class="summary-value" id="total-transactions-count">0</span>
+                    <div class="stats-summary-box">
+                        <div class="summary-item">
+                            <span class="summary-label">Total:</span>
+                            <span class="summary-value" id="total-transactions-count">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">With Images:</span>
+                            <span class="summary-value" id="transactions-with-images">0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Receipt Upload Section -->
+                    <div class="receipt-upload" id="all-receipt-upload" style="display: none;">
+                        <h3>Take Receipt Photo</h3>
+                        <div class="upload-area" id="all-upload-area">
+                            <i class="fas fa-camera"></i>
+                            <p>Tap to take photo or upload receipt</p>
+                            <input type="file" id="all-receipt-input" accept="image/*" capture="environment" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                        </div>
+                        
+                        <div class="receipt-form" id="all-receipt-form" style="display: none;">
+                            <div class="form-group">
+                                <label for="all-receipt-amount">Amount (£)</label>
+                                <input type="number" id="all-receipt-amount" step="0.01" placeholder="0.00" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="all-receipt-category">Category</label>
+                                <select id="all-receipt-category" required>
+                                    <option value="">Select category</option>
+                                    <option value="office-supplies">Office Supplies</option>
+                                    <option value="travel">Travel & Transport</option>
+                                    <option value="meals">Meals & Entertainment</option>
+                                    <option value="utilities">Utilities</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="professional-services">Professional Services</option>
+                                    <option value="equipment">Equipment</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="all-receipt-description">Description</label>
+                                <input type="text" id="all-receipt-description" placeholder="Brief description">
+                            </div>
+                            <div class="form-group">
+                                <label for="all-receipt-date">Date</label>
+                                <input type="date" id="all-receipt-date" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary" id="all-cancel-receipt">Cancel</button>
+                                <button type="button" class="btn-primary" id="all-save-receipt">Save Receipt</button>
                             </div>
                         </div>
-                        <div class="summary-card">
-                            <div class="summary-info">
-                                <span class="summary-label">With Images</span>
-                                <span class="summary-value" id="transactions-with-images">0</span>
+                    </div>
+                    
+                    <!-- Add Transaction Section -->
+                    <div class="transaction-form-section" id="all-transaction-form-section" style="display: none;">
+                        <h3>Add Transaction</h3>
+                        <form id="all-transaction-form" class="transaction-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="all-transaction-type">Type</label>
+                                    <div class="type-buttons">
+                                        <button type="button" class="type-btn active" data-type="expense">Expense</button>
+                                        <button type="button" class="type-btn" data-type="income">Income</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="all-transaction-amount">Amount (£)</label>
+                                    <input type="number" id="all-transaction-amount" step="0.01" placeholder="0.00" required>
+                                </div>
                             </div>
-                        </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="all-transaction-category">Category</label>
+                                    <select id="all-transaction-category" required>
+                                        <option value="">Select category</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="all-transaction-payment-method">Payment Method</label>
+                                    <select id="all-transaction-payment-method">
+                                        <option value="card">💳 Card</option>
+                                        <option value="cash">💵 Cash</option>
+                                        <option value="bank-transfer">🏦 Bank Transfer</option>
+                                        <option value="cheque">📝 Cheque</option>
+                                        <option value="other">🔄 Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="all-transaction-description">Description</label>
+                                <input type="text" id="all-transaction-description" placeholder="Transaction description" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="all-transaction-date">Date</label>
+                                <input type="date" id="all-transaction-date" required>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary" id="all-cancel-transaction">Cancel</button>
+                                <button type="submit" class="btn-primary">Add Transaction</button>
+                            </div>
+                        </form>
                     </div>
                     
                     <div class="all-transactions-list">
@@ -306,6 +409,98 @@
                 </div>
 
                 <!-- All Transactions moved to dedicated tab -->
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="settings">
+                <div class="settings-container">
+                    <div class="section-header">
+                        <h2>Settings</h2>
+                        <p class="section-description">Manage your application preferences and categories</p>
+                    </div>
+                    
+                    <!-- Category Management -->
+                    <div class="settings-section">
+                        <h3>Category Management</h3>
+                        <p class="section-description">Create and manage custom categories for your transactions</p>
+                        
+                        <!-- Income Categories -->
+                        <div class="category-group">
+                            <h4>Income Categories</h4>
+                            <div class="category-list" id="income-categories-list">
+                                <!-- Categories will be populated by JavaScript -->
+                            </div>
+                            <div class="add-category-form">
+                                <input type="text" id="new-income-category" placeholder="Enter new income category" maxlength="50">
+                                <button class="btn-primary" id="add-income-category">
+                                    <i class="fas fa-plus"></i> Add Category
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Expense Categories -->
+                        <div class="category-group">
+                            <h4>Expense Categories</h4>
+                            <div class="category-list" id="expense-categories-list">
+                                <!-- Categories will be populated by JavaScript -->
+                            </div>
+                            <div class="add-category-form">
+                                <input type="text" id="new-expense-category" placeholder="Enter new expense category" maxlength="50">
+                                <button class="btn-primary" id="add-expense-category">
+                                    <i class="fas fa-plus"></i> Add Category
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- App Settings -->
+                    <div class="settings-section">
+                        <h3>Application Settings</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Dark Mode</h4>
+                                <p>Toggle between light and dark theme</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="dark-mode-toggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Currency Symbol</h4>
+                                <p>Set your preferred currency symbol</p>
+                            </div>
+                            <div class="setting-control">
+                                <select id="currency-symbol">
+                                    <option value="£">£ (Pound)</option>
+                                    <option value="$">$ (Dollar)</option>
+                                    <option value="€">€ (Euro)</option>
+                                    <option value="¥">¥ (Yen)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Management -->
+                    <div class="settings-section">
+                        <h3>Data Management</h3>
+                        <div class="setting-actions">
+                            <button class="btn-secondary" id="export-settings-data">
+                                <i class="fas fa-download"></i> Export Settings
+                            </button>
+                            <button class="btn-secondary" id="import-settings-data">
+                                <i class="fas fa-upload"></i> Import Settings
+                            </button>
+                            <button class="btn-danger" id="reset-settings">
+                                <i class="fas fa-trash"></i> Reset All Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Export Tab -->

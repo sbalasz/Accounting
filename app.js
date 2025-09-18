@@ -66,6 +66,7 @@ class ExpenseTracker {
     }
 
     init() {
+        this.initSettings();
         this.setupEventListeners();
         this.updateCategoryOptions();
         this.updateDashboard();
@@ -117,6 +118,66 @@ class ExpenseTracker {
 
         document.getElementById('cancel-receipt').addEventListener('click', () => {
             this.cancelReceipt();
+        });
+
+        // All Transactions camera functionality
+        document.getElementById('all-camera-btn').addEventListener('click', () => {
+            this.toggleAllReceiptUpload();
+        });
+
+        document.getElementById('all-receipt-input').addEventListener('change', (e) => {
+            console.log('All Transactions receipt input change event triggered');
+            this.handleAllReceiptUpload(e);
+        });
+
+        document.getElementById('all-save-receipt').addEventListener('click', () => {
+            this.saveAllReceipt();
+        });
+
+        document.getElementById('all-cancel-receipt').addEventListener('click', () => {
+            this.cancelAllReceipt();
+        });
+
+        // All Transactions add transaction functionality
+        document.getElementById('all-add-transaction-btn').addEventListener('click', () => {
+            this.toggleAllTransactionForm();
+        });
+
+        document.getElementById('all-transaction-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addAllTransaction();
+        });
+
+        document.getElementById('all-cancel-transaction').addEventListener('click', () => {
+            this.cancelAllTransaction();
+        });
+
+        // Transaction type toggle for All Transactions
+        document.querySelectorAll('#all-transaction-form .type-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.switchAllTransactionType(e.target.closest('.type-btn').dataset.type);
+            });
+        });
+
+        // Settings page event listeners
+        document.getElementById('add-income-category').addEventListener('click', () => {
+            this.addCategory('income');
+        });
+
+        document.getElementById('add-expense-category').addEventListener('click', () => {
+            this.addCategory('expense');
+        });
+
+        document.getElementById('dark-mode-toggle').addEventListener('change', (e) => {
+            this.toggleDarkMode(e.target.checked);
+        });
+
+        document.getElementById('currency-symbol').addEventListener('change', (e) => {
+            this.updateCurrencySymbol(e.target.value);
+        });
+
+        document.getElementById('reset-settings').addEventListener('click', () => {
+            this.resetSettings();
         });
 
         // Export functions
@@ -379,10 +440,22 @@ class ExpenseTracker {
                 const typeSelect = document.getElementById('bulk-edit-type');
                 if (typeSelect) {
                     typeSelect.disabled = !e.target.checked;
+                    // Update categories when type checkbox is checked
+                    if (e.target.checked) {
+                        this.updateBulkEditCategories();
+                    }
                 }
             });
         } else {
             console.error('bulk-edit-type-checkbox not found');
+        }
+
+        // Add event listener for bulk edit type change to update categories
+        const bulkEditTypeSelect = document.getElementById('bulk-edit-type');
+        if (bulkEditTypeSelect) {
+            bulkEditTypeSelect.addEventListener('change', () => {
+                this.updateBulkEditCategories();
+            });
         }
 
         const bulkEditCategoryCheckbox = document.getElementById('bulk-edit-category-checkbox');
@@ -450,26 +523,17 @@ class ExpenseTracker {
 
     updateCategoryOptions() {
         const categorySelect = document.getElementById('trans-category');
-        const expenseCategories = [
-            { value: 'office-supplies', label: 'Office Supplies' },
-            { value: 'travel', label: 'Travel & Transport' },
-            { value: 'meals', label: 'Meals & Entertainment' },
-            { value: 'utilities', label: 'Utilities' },
-            { value: 'marketing', label: 'Marketing' },
-            { value: 'professional-services', label: 'Professional Services' },
-            { value: 'equipment', label: 'Equipment' },
-            { value: 'rent', label: 'Rent & Premises' },
-            { value: 'insurance', label: 'Insurance' },
-            { value: 'other', label: 'Other Expenses' }
-        ];
+        if (!categorySelect) return;
 
-        const incomeCategories = [
-            { value: 'sales', label: 'Sales Revenue' },
-            { value: 'services', label: 'Service Income' },
-            { value: 'consulting', label: 'Consulting' },
-            { value: 'interest', label: 'Interest Income' },
-            { value: 'other-income', label: 'Other Income' }
-        ];
+        const expenseCategories = this.customCategories.expense.map(cat => ({
+            value: cat,
+            label: this.getCategoryLabel(cat)
+        }));
+
+        const incomeCategories = this.customCategories.income.map(cat => ({
+            value: cat,
+            label: this.getCategoryLabel(cat)
+        }));
 
         const categories = this.currentTransactionType === 'expense' ? expenseCategories : incomeCategories;
         
@@ -585,12 +649,12 @@ class ExpenseTracker {
             console.log('FileReader completed. Result length:', e.target.result?.length);
             
             if (e.target.result && e.target.result.length > 0) {
-                this.currentReceiptImage = e.target.result;
+            this.currentReceiptImage = e.target.result;
                 console.log('Image stored in currentReceiptImage');
                 
                 // Show success message and form
                 this.showToast('Image loaded successfully! 📸', 'success');
-                this.showReceiptForm();
+            this.showReceiptForm();
                 
                 // Add a preview to the form
                 this.addImagePreview(e.target.result);
@@ -748,6 +812,9 @@ class ExpenseTracker {
         
         this.cancelReceipt();
         this.showToast('Receipt saved successfully!', 'success');
+        
+        // Navigate to All Transactions tab
+        this.switchTab('all-transactions');
             
         } catch (error) {
             console.error('Error saving receipt:', error);
@@ -771,6 +838,582 @@ class ExpenseTracker {
         
         this.currentReceiptImage = null;
         console.log('Receipt cancelled and cleaned up');
+    }
+
+    // All Transactions Camera Methods
+    toggleAllReceiptUpload() {
+        const uploadSection = document.getElementById('all-receipt-upload');
+        if (uploadSection.style.display === 'none') {
+            uploadSection.style.display = 'block';
+            // Set default date
+            document.getElementById('all-receipt-date').value = new Date().toISOString().split('T')[0];
+        } else {
+            uploadSection.style.display = 'none';
+            this.cancelAllReceipt();
+        }
+    }
+
+    handleAllReceiptUpload(event) {
+        console.log('handleAllReceiptUpload called', event);
+        
+        const files = event.target.files;
+        console.log('Files available:', files.length);
+        
+        if (!files || files.length === 0) {
+            console.log('No files selected');
+            return;
+        }
+
+        const file = files[0];
+        console.log('Selected file:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+        // Validate file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            this.showToast('File too large. Please select an image smaller than 10MB.', 'error');
+            return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            this.showToast('Please select an image file.', 'error');
+            return;
+        }
+
+        console.log('File validation passed, reading file...');
+        
+        const reader = new FileReader();
+        
+        reader.onloadstart = () => {
+            console.log('FileReader started loading');
+        };
+        
+        reader.onprogress = (e) => {
+            if (e.lengthComputable) {
+                const percentLoaded = Math.round((e.loaded / e.total) * 100);
+                console.log(`FileReader progress: ${percentLoaded}%`);
+            }
+        };
+        
+        reader.onload = async (e) => {
+            console.log('FileReader completed. Result length:', e.target.result?.length);
+            
+            if (e.target.result && e.target.result.length > 0) {
+                this.currentReceiptImage = e.target.result;
+                console.log('Image stored in currentReceiptImage');
+                
+                // Show success message and form
+                this.showToast('Image loaded successfully! 📸', 'success');
+                this.showAllReceiptForm();
+                
+                // Add a preview to the form
+                this.addAllImagePreview(e.target.result);
+            } else {
+                console.error('FileReader result is empty');
+                this.showToast('Error: Image data is empty', 'error');
+            }
+        };
+        
+        reader.onerror = (e) => {
+            console.error('FileReader error:', e);
+            this.showToast('Error reading file. Please try again.', 'error');
+        };
+        
+        reader.onabort = () => {
+            console.log('FileReader aborted');
+            this.showToast('File reading cancelled', 'info');
+        };
+        
+        try {
+            reader.readAsDataURL(file);
+            console.log('FileReader.readAsDataURL() called');
+        } catch (error) {
+            console.error('Error calling readAsDataURL:', error);
+            this.showToast('Error processing file: ' + error.message, 'error');
+        }
+    }
+
+    showAllReceiptForm() {
+        document.getElementById('all-upload-area').style.display = 'none';
+        document.getElementById('all-receipt-form').style.display = 'block';
+        document.getElementById('all-receipt-date').value = new Date().toISOString().split('T')[0];
+        
+        console.log('All Transactions receipt form shown');
+    }
+
+    addAllImagePreview(imageSrc) {
+        try {
+            console.log('Adding image preview to All Transactions...');
+            
+            // Remove existing preview if any
+            const existingPreview = document.getElementById('all-image-preview');
+            if (existingPreview) {
+                existingPreview.remove();
+                console.log('Removed existing All Transactions preview');
+            }
+
+            // Create new preview
+            const previewContainer = document.createElement('div');
+            previewContainer.id = 'all-image-preview';
+            previewContainer.innerHTML = `
+                <div style="margin-bottom: 1rem; text-align: center;">
+                    <h4 style="color: #10b981; margin-bottom: 0.5rem;">✅ Image Captured</h4>
+                    <img src="${imageSrc}" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #10b981;" alt="Receipt Preview">
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Image ready for saving</p>
+                </div>
+            `;
+
+            // Insert preview at the top of the receipt form
+            const receiptForm = document.getElementById('all-receipt-form');
+            if (receiptForm) {
+                receiptForm.insertBefore(previewContainer, receiptForm.firstChild);
+                console.log('Image preview added to All Transactions form successfully');
+            } else {
+                console.warn('All Transactions receipt form not found, cannot add preview - this is normal during form transition');
+            }
+        } catch (error) {
+            console.warn('Error in addAllImagePreview (non-critical):', error);
+        }
+    }
+
+    async saveAllReceipt() {
+        const amount = parseFloat(document.getElementById('all-receipt-amount').value);
+        const category = document.getElementById('all-receipt-category').value;
+        const description = document.getElementById('all-receipt-description').value;
+        const date = document.getElementById('all-receipt-date').value;
+
+        console.log('Saving All Transactions receipt:', { amount, category, description, date });
+        console.log('Current receipt image exists:', !!this.currentReceiptImage);
+
+        if (!amount || !category || !date) {
+            this.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        if (!this.currentReceiptImage) {
+            this.showToast('No image selected. Please take a photo first.', 'error');
+            return;
+        }
+
+        try {
+            const receiptId = Date.now().toString();
+            
+            // Store image in IndexedDB if available, otherwise use localStorage
+            const imageReference = await this.storeImageInDB(
+                receiptId, 
+                this.currentReceiptImage,
+                {
+                    receiptId: receiptId,
+                    amount: amount,
+                    category: category,
+                    description: description || 'Receipt'
+                }
+            );
+
+        const receipt = {
+                id: receiptId,
+            amount: amount,
+            category: category,
+            description: description || 'Receipt',
+            date: date,
+                image: imageReference, // This will be either IndexedDB reference or original data
+            timestamp: new Date().toISOString()
+        };
+
+        // Also add as transaction
+        const transaction = {
+            id: (Date.now() + 1).toString(),
+            type: 'expense',
+            amount: amount,
+            category: category,
+            description: description || 'Receipt expense',
+            date: date,
+            paymentMethod: 'card',
+            receiptId: receipt.id,
+            timestamp: new Date().toISOString()
+        };
+
+            console.log('Adding receipt:', receipt);
+            console.log('Adding transaction:', transaction);
+
+        this.receipts.unshift(receipt);
+        this.transactions.unshift(transaction);
+            
+            // Save data with error handling
+            try {
+        this.saveData();
+                console.log('Data saved successfully');
+            } catch (saveError) {
+                console.error('Error saving data:', saveError);
+                this.showToast('Error saving data to storage', 'error');
+                return;
+            }
+            
+        this.updateDashboard();
+        this.renderTransactions();
+            this.renderAllTransactions();
+        this.renderReceipts();
+        this.updateChart();
+            this.updateFilterCategories();
+            this.updateAllTransactionsStats();
+        
+        this.cancelAllReceipt();
+        this.showToast('Receipt saved successfully!', 'success');
+        
+        // Stay on All Transactions tab (no navigation needed)
+            
+        } catch (error) {
+            console.error('Error saving All Transactions receipt:', error);
+            this.showToast('Error saving receipt: ' + error.message, 'error');
+        }
+    }
+
+    cancelAllReceipt() {
+        document.getElementById('all-upload-area').style.display = 'block';
+        document.getElementById('all-receipt-form').style.display = 'none';
+        document.getElementById('all-receipt-input').value = '';
+        document.getElementById('all-receipt-amount').value = '';
+        document.getElementById('all-receipt-category').value = '';
+        document.getElementById('all-receipt-description').value = '';
+        
+        // Remove image preview
+        const existingPreview = document.getElementById('all-image-preview');
+        if (existingPreview) {
+            existingPreview.remove();
+        }
+        
+        this.currentReceiptImage = null;
+        console.log('All Transactions receipt cancelled and cleaned up');
+    }
+
+    // Settings and Category Management
+    initSettings() {
+        this.customCategories = {
+            income: ['sales', 'services', 'investment', 'freelance', 'other'],
+            expense: ['office-supplies', 'travel', 'meals', 'utilities', 'marketing', 'professional-services', 'equipment', 'other']
+        };
+        
+        this.loadSettings();
+        this.renderCategories();
+        this.loadAppSettings();
+    }
+
+    loadSettings() {
+        const saved = localStorage.getItem('expenseTrackerSettings');
+        if (saved) {
+            const settings = JSON.parse(saved);
+            this.customCategories = settings.categories || this.customCategories;
+            this.currencySymbol = settings.currencySymbol || '£';
+            this.darkMode = settings.darkMode || false;
+        }
+    }
+
+    saveSettings() {
+        const settings = {
+            categories: this.customCategories,
+            currencySymbol: this.currencySymbol,
+            darkMode: this.darkMode
+        };
+        localStorage.setItem('expenseTrackerSettings', JSON.stringify(settings));
+    }
+
+    renderCategories() {
+        this.renderCategoryList('income');
+        this.renderCategoryList('expense');
+    }
+
+    renderCategoryList(type) {
+        const container = document.getElementById(`${type}-categories-list`);
+        if (!container) return;
+
+        container.innerHTML = '';
+        
+        this.customCategories[type].forEach(category => {
+            const categoryItem = document.createElement('div');
+            categoryItem.className = 'category-item';
+            categoryItem.innerHTML = `
+                <span>${this.getCategoryLabel(category)}</span>
+                <button class="delete-category" data-type="${type}" data-category="${category}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(categoryItem);
+        });
+
+        // Add delete event listeners
+        container.querySelectorAll('.delete-category').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const type = e.target.closest('.delete-category').dataset.type;
+                const category = e.target.closest('.delete-category').dataset.category;
+                this.deleteCategory(type, category);
+            });
+        });
+    }
+
+    addCategory(type) {
+        const input = document.getElementById(`new-${type}-category`);
+        const categoryName = input.value.trim();
+        
+        if (!categoryName) {
+            this.showToast('Please enter a category name', 'error');
+            return;
+        }
+
+        if (this.customCategories[type].includes(categoryName.toLowerCase())) {
+            this.showToast('Category already exists', 'error');
+            return;
+        }
+
+        this.customCategories[type].push(categoryName.toLowerCase());
+        this.saveSettings();
+        this.renderCategoryList(type);
+        this.updateAllCategoryOptions();
+        input.value = '';
+        this.showToast(`${this.getCategoryLabel(categoryName)} added successfully!`, 'success');
+    }
+
+    deleteCategory(type, category) {
+        if (confirm(`Are you sure you want to delete "${this.getCategoryLabel(category)}"?`)) {
+            const index = this.customCategories[type].indexOf(category);
+            if (index > -1) {
+                this.customCategories[type].splice(index, 1);
+                this.saveSettings();
+                this.renderCategoryList(type);
+                this.updateAllCategoryOptions();
+                this.showToast('Category deleted successfully', 'success');
+            }
+        }
+    }
+
+    updateAllCategoryOptions() {
+        // Update main transaction form
+        this.updateCategoryOptions();
+        
+        // Update All Transactions form
+        this.updateAllTransactionCategoryOptions();
+        
+        // Update receipt forms
+        this.updateReceiptCategoryOptions();
+    }
+
+    updateReceiptCategoryOptions() {
+        const incomeSelect = document.getElementById('receipt-category');
+        const allIncomeSelect = document.getElementById('all-receipt-category');
+        
+        if (incomeSelect) {
+            incomeSelect.innerHTML = '<option value="">Select category</option>';
+            this.customCategories.expense.forEach(cat => {
+                incomeSelect.innerHTML += `<option value="${cat}">${this.getCategoryLabel(cat)}</option>`;
+            });
+        }
+        
+        if (allIncomeSelect) {
+            allIncomeSelect.innerHTML = '<option value="">Select category</option>';
+            this.customCategories.expense.forEach(cat => {
+                allIncomeSelect.innerHTML += `<option value="${cat}">${this.getCategoryLabel(cat)}</option>`;
+            });
+        }
+    }
+
+    loadAppSettings() {
+        // Load dark mode
+        if (this.darkMode) {
+            document.body.classList.add('dark-mode');
+            document.getElementById('dark-mode-toggle').checked = true;
+        }
+
+        // Load currency symbol
+        if (this.currencySymbol) {
+            document.getElementById('currency-symbol').value = this.currencySymbol;
+        }
+    }
+
+    toggleDarkMode(enabled) {
+        this.darkMode = enabled;
+        if (enabled) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        this.saveSettings();
+        this.showToast(`Dark mode ${enabled ? 'enabled' : 'disabled'}`, 'success');
+    }
+
+    updateCurrencySymbol(symbol) {
+        this.currencySymbol = symbol;
+        this.saveSettings();
+        this.showToast(`Currency symbol updated to ${symbol}`, 'success');
+        // Update all currency displays
+        this.updateCurrencyDisplays();
+    }
+
+    updateCurrencyDisplays() {
+        // This would update all currency displays throughout the app
+        // For now, we'll just show a success message
+        console.log('Currency symbol updated to:', this.currencySymbol);
+    }
+
+    resetSettings() {
+        if (confirm('Are you sure you want to reset all settings? This will delete all custom categories and reset to defaults.')) {
+            this.customCategories = {
+                income: ['sales', 'services', 'investment', 'freelance', 'other'],
+                expense: ['office-supplies', 'travel', 'meals', 'utilities', 'marketing', 'professional-services', 'equipment', 'other']
+            };
+            this.currencySymbol = '£';
+            this.darkMode = false;
+            
+            this.saveSettings();
+            this.renderCategories();
+            this.updateAllCategoryOptions();
+            this.loadAppSettings();
+            
+            this.showToast('Settings reset successfully', 'success');
+        }
+    }
+
+    getCategoryLabel(category) {
+        const labels = {
+            // Income categories
+            'sales': 'Sales Revenue',
+            'services': 'Service Income',
+            'investment': 'Investment Income',
+            'freelance': 'Freelance Work',
+            'other': 'Other Income',
+            
+            // Expense categories
+            'office-supplies': 'Office Supplies',
+            'travel': 'Travel & Transport',
+            'meals': 'Meals & Entertainment',
+            'utilities': 'Utilities',
+            'marketing': 'Marketing',
+            'professional-services': 'Professional Services',
+            'equipment': 'Equipment',
+            'other': 'Other Expenses'
+        };
+        
+        return labels[category] || category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, ' ');
+    }
+
+    // All Transactions Add Transaction Methods
+    toggleAllTransactionForm() {
+        const formSection = document.getElementById('all-transaction-form-section');
+        if (formSection.style.display === 'none') {
+            formSection.style.display = 'block';
+            // Set default date
+            document.getElementById('all-transaction-date').value = new Date().toISOString().split('T')[0];
+            // Update category options
+            this.updateAllTransactionCategoryOptions();
+        } else {
+            formSection.style.display = 'none';
+            this.cancelAllTransaction();
+        }
+    }
+
+    switchAllTransactionType(type) {
+        document.querySelectorAll('#all-transaction-form .type-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`#all-transaction-form [data-type="${type}"]`).classList.add('active');
+
+        this.currentTransactionType = type;
+        this.updateAllTransactionCategoryOptions();
+    }
+
+    updateAllTransactionCategoryOptions() {
+        const categorySelect = document.getElementById('all-transaction-category');
+        if (!categorySelect) return;
+
+        const expenseCategories = this.customCategories.expense.map(cat => ({
+            value: cat,
+            label: this.getCategoryLabel(cat)
+        }));
+
+        const incomeCategories = this.customCategories.income.map(cat => ({
+            value: cat,
+            label: this.getCategoryLabel(cat)
+        }));
+
+        const categories = this.currentTransactionType === 'expense' ? expenseCategories : incomeCategories;
+        
+        categorySelect.innerHTML = '<option value="">Select category</option>';
+        categories.forEach(cat => {
+            categorySelect.innerHTML += `<option value="${cat.value}">${cat.label}</option>`;
+        });
+    }
+
+    addAllTransaction() {
+        const form = document.getElementById('all-transaction-form');
+        const editingId = form.dataset.editingId;
+        const amount = parseFloat(document.getElementById('all-transaction-amount').value);
+        const category = document.getElementById('all-transaction-category').value;
+        const description = document.getElementById('all-transaction-description').value;
+        const date = document.getElementById('all-transaction-date').value;
+        const paymentMethod = document.getElementById('all-transaction-payment-method').value;
+
+        if (!amount || !category || !description || !date) {
+            this.showToast('Please fill in all required fields', 'error');
+            return;
+        }
+
+        if (editingId) {
+            // Update existing transaction
+            const transactionIndex = this.transactions.findIndex(t => t.id === editingId);
+            if (transactionIndex !== -1) {
+                this.transactions[transactionIndex] = {
+                    ...this.transactions[transactionIndex],
+                    type: this.currentTransactionType,
+                    amount: amount,
+                    category: category,
+                    description: description,
+                    date: date,
+                    paymentMethod: paymentMethod
+                };
+                
+                this.saveData();
+                this.updateDashboard();
+                this.renderTransactions();
+                this.renderAllTransactions();
+                this.updateChart();
+                this.updateFilterCategories();
+                this.updateAllTransactionsStats();
+                
+                this.cancelAllTransaction();
+                this.showToast('Transaction updated successfully!', 'success');
+            }
+        } else {
+            // Add new transaction
+            const transaction = {
+                id: Date.now().toString(),
+                type: this.currentTransactionType,
+                amount: amount,
+                category: category,
+                description: description,
+                date: date,
+                paymentMethod: paymentMethod,
+                timestamp: new Date().toISOString()
+            };
+
+            this.transactions.unshift(transaction);
+            this.saveData();
+            
+            this.updateDashboard();
+            this.renderTransactions();
+            this.renderAllTransactions();
+            this.updateChart();
+            this.updateFilterCategories();
+            this.updateAllTransactionsStats();
+            
+            this.cancelAllTransaction();
+            this.showToast('Transaction added successfully!', 'success');
+        }
+    }
+
+    cancelAllTransaction() {
+        document.getElementById('all-transaction-form-section').style.display = 'none';
+        document.getElementById('all-transaction-form').reset();
+        document.getElementById('all-transaction-date').value = new Date().toISOString().split('T')[0];
+        // Clear editing ID
+        delete document.getElementById('all-transaction-form').dataset.editingId;
+        console.log('All Transactions form cancelled and reset');
     }
 
     updateDashboard() {
@@ -815,7 +1458,7 @@ class ExpenseTracker {
             console.error('Transactions container not found');
             return;
         }
-        
+
         const transactionsToShow = this.filteredTransactions.length > 0 ? this.filteredTransactions : this.transactions;
         
         if (transactionsToShow.length === 0) {
@@ -1647,24 +2290,31 @@ ${sign}${amount}
         const transaction = this.transactions.find(t => t.id === transactionId);
         if (!transaction) return;
 
-        // Switch to transactions tab and populate form
-        this.switchTab('transactions');
+        // Switch to all-transactions tab (now called Transactions)
+        this.switchTab('all-transactions');
         
-        document.getElementById('trans-amount').value = transaction.amount;
-        document.getElementById('trans-description').value = transaction.description;
-        document.getElementById('trans-date').value = transaction.date;
-        document.getElementById('trans-payment-method').value = transaction.paymentMethod || 'card';
+        // Show the transaction form section
+        const formSection = document.getElementById('all-transaction-form-section');
+        if (formSection) {
+            formSection.style.display = 'block';
+        }
+        
+        // Populate the all-transaction form
+        document.getElementById('all-transaction-amount').value = transaction.amount;
+        document.getElementById('all-transaction-description').value = transaction.description;
+        document.getElementById('all-transaction-date').value = transaction.date;
+        document.getElementById('all-transaction-payment-method').value = transaction.paymentMethod || 'card';
         
         // Set transaction type
-        this.switchTransactionType(transaction.type);
+        this.switchAllTransactionType(transaction.type);
         
         // Set category after type is switched
         setTimeout(() => {
-            document.getElementById('trans-category').value = transaction.category;
+            document.getElementById('all-transaction-category').value = transaction.category;
         }, 100);
 
         // Store the ID for updating instead of creating new
-        document.getElementById('transaction-form').dataset.editingId = transactionId;
+        document.getElementById('all-transaction-form').dataset.editingId = transactionId;
         
         this.showToast('Transaction loaded for editing', 'success');
     }
@@ -2497,6 +3147,12 @@ ${sign}${amount}
             console.error('bulk-edit-form not found');
         }
         
+        // Set default type to expense and update categories
+        const typeSelect = document.getElementById('bulk-edit-type');
+        if (typeSelect) {
+            typeSelect.value = 'expense';
+        }
+        
         const checkboxes = document.querySelectorAll('#bulk-edit-form input[type="checkbox"]');
         checkboxes.forEach(cb => {
             cb.checked = false;
@@ -2504,7 +3160,7 @@ ${sign}${amount}
         });
         console.log(`Reset ${checkboxes.length} checkboxes`);
 
-        // Populate categories
+        // Populate categories based on default type
         try {
             this.updateBulkEditCategories();
             console.log('Updated bulk edit categories');
@@ -2517,13 +3173,22 @@ ${sign}${amount}
 
     updateBulkEditCategories() {
         const categorySelect = document.getElementById('bulk-edit-category');
-        const categories = [...new Set(this.transactions.map(t => t.category))].filter(Boolean).sort();
+        if (!categorySelect) return;
+
+        // Get the selected transaction type from the bulk edit form
+        const typeSelect = document.getElementById('bulk-edit-type');
+        const selectedType = typeSelect ? typeSelect.value : 'expense';
+        
+        // Use custom categories based on the selected type
+        const categories = selectedType === 'income' 
+            ? this.customCategories.income 
+            : this.customCategories.expense;
         
         categorySelect.innerHTML = '<option value="">Select Category</option>';
         categories.forEach(category => {
             const option = document.createElement('option');
             option.value = category;
-            option.textContent = category;
+            option.textContent = this.getCategoryLabel(category);
             categorySelect.appendChild(option);
         });
     }
