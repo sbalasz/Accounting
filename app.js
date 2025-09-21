@@ -85,12 +85,12 @@ class ExpenseTracker {
                 this.init();
             });
         } else {
-            this.initDatabase().then(() => {
-                this.init();
-            }).catch((error) => {
-                console.error('Database init failed, continuing with basic init:', error);
-                this.init();
-            });
+        this.initDatabase().then(() => {
+        this.init();
+        }).catch((error) => {
+            console.error('Database init failed, continuing with basic init:', error);
+            this.init();
+        });
         }
     }
 
@@ -693,17 +693,17 @@ class ExpenseTracker {
                     
                     await this.firebaseIntegration.addTransaction(this.userId, transaction);
                     console.log('Transaction added to Firebase successfully');
-                    this.showToast('Transaction added successfully!', 'success');
+            this.showToast('Transaction added successfully!', 'success');
                 } catch (error) {
                     console.error('Error adding transaction to Firebase:', error);
                     this.showToast(`Error adding transaction: ${error.message}`, 'error');
                     return;
-                }
+        }
             } else {
                 console.log('Adding transaction locally');
                 this.transactions.unshift(transaction);
                 this.showToast('Transaction added successfully!', 'success');
-                this.saveData();
+        this.saveData();
             }
         }
         this.updateDashboard();
@@ -1438,7 +1438,7 @@ class ExpenseTracker {
         });
     }
 
-    addAllTransaction() {
+    async addAllTransaction() {
         const form = document.getElementById('all-transaction-form');
         const editingId = form.dataset.editingId;
         const amount = parseFloat(document.getElementById('all-transaction-amount').value);
@@ -1455,11 +1455,11 @@ class ExpenseTracker {
         if (editingId) {
             // Update existing transaction
             const updatedTransaction = {
-                type: this.currentTransactionType,
-                amount: amount,
-                category: category,
-                description: description,
-                date: date,
+                    type: this.currentTransactionType,
+                    amount: amount,
+                    category: category,
+                    description: description,
+                    date: date,
                 paymentMethod: paymentMethod,
                 timestamp: new Date().toISOString()
             };
@@ -1483,19 +1483,19 @@ class ExpenseTracker {
                         ...this.transactions[transactionIndex],
                         ...updatedTransaction
                     };
-                    this.saveData();
+                this.saveData();
                     this.showToast('Transaction updated successfully!', 'success');
                 }
             }
             
-            this.updateDashboard();
-            this.renderTransactions();
-            this.renderAllTransactions();
-            this.updateChart();
-            this.updateFilterCategories();
-            this.updateAllTransactionsStats();
-            
-            this.cancelAllTransaction();
+                this.updateDashboard();
+                this.renderTransactions();
+                this.renderAllTransactions();
+                this.updateChart();
+                this.updateFilterCategories();
+                this.updateAllTransactionsStats();
+                
+                this.cancelAllTransaction();
         } else {
             // Add new transaction
             const transaction = {
@@ -1529,9 +1529,9 @@ class ExpenseTracker {
                 }
             } else {
                 console.log('Adding transaction locally from All Transactions form');
-                this.transactions.unshift(transaction);
+            this.transactions.unshift(transaction);
                 this.showToast('Transaction added successfully!', 'success');
-                this.saveData();
+            this.saveData();
             }
             
             this.updateDashboard();
