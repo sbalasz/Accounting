@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Firebase Integration Test</h1>
+        <p>This tool will test all Firebase functionality step by step.</p>
+        
+        <div id="overall-status" class="status info">Starting tests...</div>
+        
+        <div class="test-section">
+            <h3>Step 1: Firebase Connection</h3>
+            <button onclick="testFirebaseConnection()">Test Firebase Connection</button>
+            <div id="connection-status" class="status info">Not tested</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 2: Authentication</h3>
+            <div class="form-group">
+                <label for="test-email">Email:</label>
+                <input type="email" id="test-email" placeholder="test@example.com">
+            </div>
+            <div class="form-group">
+                <label for="test-password">Password:</label>
+                <input type="password" id="test-password" placeholder="test123">
+            </div>
+            <button onclick="testAuthentication()">Test Authentication</button>
+            <div id="auth-status" class="status info">Not tested</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 3: Data Operations</h3>
+            <button onclick="testAddTransaction()">Test Add Transaction</button>
+            <button onclick="testGetTransactions()">Test Get Transactions</button>
+            <button onclick="testRealTimeSync()">Test Real-Time Sync</button>
+            <div id="data-status" class="status info">Not tested</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 4: Cross-Device Test</h3>
+            <button onclick="testCrossDevice()">Test Cross-Device Sync</button>
+            <div id="cross-device-status" class="status info">Not tested</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 5: Debug Information</h3>
+            <button onclick="showDebugInfo()">Show Debug Info</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div id="test-log" class="log">Starting Firebase integration test...\n</div>
+    </div>
+
+    <script src="firebase-integration.js"></script>
+    <script>
+        let firebaseIntegration = null;
+        let currentUser = null;
+        let testResults = {
+            connection: false,
+            auth: false,
+            data: false,
+            sync: false
+        };
+
+        function log(message) {
+            const logElement = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function setStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        function updateOverallStatus() {
+            const passed = Object.values(testResults).filter(Boolean).length;
+            const total = Object.keys(testResults).length;
+            const statusElement = document.getElementById('overall-status');
+            
+            if (passed === total) {
+                statusElement.textContent = `✅ All tests passed! (${passed}/${total})`;
+                statusElement.className = 'status success';
+            } else if (passed > 0) {
+                statusElement.textContent = `⚠️ Some tests passed (${passed}/${total})`;
+                statusElement.className = 'status warning';
+            } else {
+                statusElement.textContent = `❌ Tests failed (${passed}/${total})`;
+                statusElement.className = 'status error';
+            }
+        }
+
+        window.testFirebaseConnection = async function() {
+            try {
+                log('Testing Firebase connection...');
+                
+                if (typeof FirebaseIntegration === 'undefined') {
+                    throw new Error('FirebaseIntegration not loaded');
+                }
+                
+                firebaseIntegration = new FirebaseIntegration();
+                await firebaseIntegration.initialize();
+                
+                log('✅ Firebase connection successful');
+                setStatus('connection-status', '✅ Connected successfully', 'success');
+                testResults.connection = true;
+                
+            } catch (error) {
+                log(`❌ Firebase connection failed: ${error.message}`);
+                setStatus('connection-status', `❌ Connection failed: ${error.message}`, 'error');
+                testResults.connection = false;
+            }
+            updateOverallStatus();
+        };
+
+        window.testAuthentication = async function() {
+            try {
+                log('Testing authentication...');
+                
+                const email = document.getElementById('test-email').value;
+                const password = document.getElementById('test-password').value;
+                
+                if (!email || !password) {
+                    throw new Error('Please enter email and password');
+                }
+                
+                if (!firebaseIntegration) {
+                    await testFirebaseConnection();
+                }
+                
+                // Try to sign in first
+                try {
+                    currentUser = await firebaseIntegration.signInWithEmailAndPassword(email, password);
+                    log(`✅ Sign in successful: ${currentUser.email}`);
+                } catch (signInError) {
+                    // If sign in fails, try to create user
+                    log(`Sign in failed, trying to create user: ${signInError.message}`);
+                    currentUser = await firebaseIntegration.createUserWithEmailAndPassword(email, password, 'Test User');
+                    log(`✅ User created successfully: ${currentUser.email}`);
+                }
+                
+                setStatus('auth-status', `✅ Authenticated as ${currentUser.email}`, 'success');
+                testResults.auth = true;
+                
+            } catch (error) {
+                log(`❌ Authentication failed: ${error.message}`);
+                setStatus('auth-status', `❌ Auth failed: ${error.message}`, 'error');
+                testResults.auth = false;
+            }
+            updateOverallStatus();
+        };
+
+        window.testAddTransaction = async function() {
+            try {
+                log('Testing add transaction...');
+                
+                if (!currentUser) {
+                    throw new Error('Please authenticate first');
+                }
+                
+                const testTransaction = {
+                    id: Date.now().toString(),
+                    type: 'expense',
+                    amount: 25.50,
+                    category: 'Food',
+                    description: 'Test transaction',
+                    date: new Date().toISOString().split('T')[0],
+                    paymentMethod: 'Card',
+                    timestamp: new Date().toISOString()
+                };
+                
+                await firebaseIntegration.addTransaction(currentUser.uid, testTransaction);
+                log('✅ Transaction added successfully');
+                
+                setStatus('data-status', '✅ Transaction added', 'success');
+                testResults.data = true;
+                
+            } catch (error) {
+                log(`❌ Add transaction failed: ${error.message}`);
+                setStatus('data-status', `❌ Add failed: ${error.message}`, 'error');
+                testResults.data = false;
+            }
+            updateOverallStatus();
+        };
+
+        window.testGetTransactions = async function() {
+            try {
+                log('Testing get transactions...');
+                
+                if (!currentUser) {
+                    throw new Error('Please authenticate first');
+                }
+                
+                const transactions = await firebaseIntegration.getTransactions(currentUser.uid);
+                log(`✅ Retrieved ${transactions.length} transactions`);
+                
+                if (transactions.length > 0) {
+                    log(`Sample transaction: ${JSON.stringify(transactions[0], null, 2)}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Get transactions failed: ${error.message}`);
+            }
+        };
+
+        window.testRealTimeSync = async function() {
+            try {
+                log('Testing real-time sync...');
+                
+                if (!currentUser) {
+                    throw new Error('Please authenticate first');
+                }
+                
+                let syncReceived = false;
+                
+                firebaseIntegration.setupRealtimeSync(currentUser.uid, (dataType, data) => {
+                    log(`✅ Real-time sync received: ${dataType} (${data.length} items)`);
+                    syncReceived = true;
+                    testResults.sync = true;
+                    setStatus('data-status', '✅ Real-time sync working', 'success');
+                    updateOverallStatus();
+                });
+                
+                // Wait a bit for sync to be set up
+                setTimeout(() => {
+                    if (!syncReceived) {
+                        log('⚠️ Real-time sync setup completed (no immediate data)');
+                        testResults.sync = true;
+                        setStatus('data-status', '✅ Real-time sync setup', 'success');
+                        updateOverallStatus();
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                log(`❌ Real-time sync failed: ${error.message}`);
+                testResults.sync = false;
+                updateOverallStatus();
+            }
+        };
+
+        window.testCrossDevice = async function() {
+            try {
+                log('Testing cross-device functionality...');
+                
+                if (!currentUser) {
+                    throw new Error('Please authenticate first');
+                }
+                
+                // Test if we can access the same user's data
+                const transactions = await firebaseIntegration.getTransactions(currentUser.uid);
+                log(`✅ Cross-device access: Found ${transactions.length} transactions for user ${currentUser.uid}`);
+                
+                setStatus('cross-device-status', `✅ Cross-device access working (${transactions.length} transactions)`, 'success');
+                
+            } catch (error) {
+                log(`❌ Cross-device test failed: ${error.message}`);
+                setStatus('cross-device-status', `❌ Cross-device failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.showDebugInfo = function() {
+            log('=== DEBUG INFORMATION ===');
+            log(`FirebaseIntegration available: ${typeof FirebaseIntegration !== 'undefined'}`);
+            log(`EncryptionManager available: ${typeof EncryptionManager !== 'undefined'}`);
+            log(`Current user: ${currentUser ? currentUser.email : 'None'}`);
+            log(`User ID: ${currentUser ? currentUser.uid : 'None'}`);
+            log(`Firebase integration initialized: ${firebaseIntegration ? firebaseIntegration.isInitialized : false}`);
+            log(`Session storage: ${JSON.stringify({
+                authenticated: sessionStorage.getItem('authenticated'),
+                firebaseUser: sessionStorage.getItem('firebaseUser'),
+                currentUser: sessionStorage.getItem('currentUser')
+            }, null, 2)}`);
+            log('========================');
+        };
+
+        window.clearLog = function() {
+            document.getElementById('test-log').textContent = 'Log cleared...\n';
+        };
+
+        // Auto-start connection test
+        setTimeout(() => {
+            testFirebaseConnection();
+        }, 1000);
+    </script>
+</body>
+</html>

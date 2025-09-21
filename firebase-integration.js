@@ -129,11 +129,20 @@ window.FirebaseIntegration = class FirebaseIntegration {
             const transactions = [];
             transactionsSnapshot.forEach(doc => {
                 const data = doc.data();
-                const decryptedData = this.encryptionManager.decrypt(data.data);
-                transactions.push({
-                    id: doc.id,
-                    ...decryptedData
-                });
+                try {
+                    const decryptedData = this.encryptionManager.decrypt(data.data);
+                    transactions.push({
+                        id: doc.id,
+                        ...decryptedData
+                    });
+                } catch (decryptError) {
+                    console.error('Error decrypting transaction:', decryptError);
+                    // If decryption fails, try to return the raw data
+                    transactions.push({
+                        id: doc.id,
+                        ...data.data
+                    });
+                }
             });
             
             return transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -168,7 +177,6 @@ window.FirebaseIntegration = class FirebaseIntegration {
 
     async getReceipts(userId) {
         if (!this.isInitialized) {
-            await this.isInitialized) {
             await this.initialize();
         }
 
@@ -180,11 +188,20 @@ window.FirebaseIntegration = class FirebaseIntegration {
             const receipts = [];
             receiptsSnapshot.forEach(doc => {
                 const data = doc.data();
-                const decryptedData = this.encryptionManager.decrypt(data.data);
-                receipts.push({
-                    id: doc.id,
-                    ...decryptedData
-                });
+                try {
+                    const decryptedData = this.encryptionManager.decrypt(data.data);
+                    receipts.push({
+                        id: doc.id,
+                        ...decryptedData
+                    });
+                } catch (decryptError) {
+                    console.error('Error decrypting receipt:', decryptError);
+                    // If decryption fails, try to return the raw data
+                    receipts.push({
+                        id: doc.id,
+                        ...data.data
+                    });
+                }
             });
             
             return receipts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -318,7 +335,12 @@ window.FirebaseIntegration = class FirebaseIntegration {
                             ...decryptedData
                         });
                     } catch (error) {
-                        console.error('Error decrypting transaction:', error);
+                        console.error('Error decrypting transaction in real-time sync:', error);
+                        // If decryption fails, try to return the raw data
+                        transactions.push({
+                            id: doc.id,
+                            ...data.data
+                        });
                     }
                 });
                 
@@ -338,7 +360,12 @@ window.FirebaseIntegration = class FirebaseIntegration {
                             ...decryptedData
                         });
                     } catch (error) {
-                        console.error('Error decrypting receipt:', error);
+                        console.error('Error decrypting receipt in real-time sync:', error);
+                        // If decryption fails, try to return the raw data
+                        receipts.push({
+                            id: doc.id,
+                            ...data.data
+                        });
                     }
                 });
                 
