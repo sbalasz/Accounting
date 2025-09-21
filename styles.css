@@ -1247,9 +1247,7 @@ body {
     }
 }
 
-.btn-icon.primary:active {
-    animation: pulse 0.6s;
-}
+/* Duplicate .btn-icon.primary:active rule removed - using enhanced version above */
 
 /* Settings Page Styles */
 .settings-container {
@@ -1576,26 +1574,7 @@ input:checked + .toggle-slider:before {
     margin-bottom: 1rem;
 }
 
-.btn-icon {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 0.5rem;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-}
-
-.btn-icon:hover {
-    background: #f8f9fa;
-    border-color: #2563eb;
-    color: #2563eb;
-}
+/* Duplicate .btn-icon rules removed - using enhanced version above */
 
 /* Filter Bar */
 .filter-bar {

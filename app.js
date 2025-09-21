@@ -7,7 +7,7 @@ if (sessionStorage.getItem('authenticated') !== 'true') {
 
 class ExpenseTracker {
     constructor() {
-        console.log('ExpenseTracker constructor called');
+
         this.transactions = JSON.parse(localStorage.getItem('transactions')) || [];
         this.receipts = JSON.parse(localStorage.getItem('receipts')) || [];
         this.currentTab = 'dashboard';
@@ -27,7 +27,7 @@ class ExpenseTracker {
         };
         
         this.initDatabase().then(() => {
-            console.log('Database initialized, starting app init...');
+
         this.init();
         }).catch((error) => {
             console.error('Database init failed, continuing with basic init:', error);
@@ -37,8 +37,7 @@ class ExpenseTracker {
 
     async initDatabase() {
         return new Promise((resolve, reject) => {
-            console.log('Initializing IndexedDB for image storage...');
-            
+
             const request = indexedDB.open('ExpenseTrackerDB', 1);
             
             request.onerror = () => {
@@ -49,7 +48,7 @@ class ExpenseTracker {
             
             request.onsuccess = () => {
                 this.db = request.result;
-                console.log('IndexedDB initialized successfully');
+
                 resolve();
             };
             
@@ -59,13 +58,13 @@ class ExpenseTracker {
                 // Create object store for images
                 if (!db.objectStoreNames.contains('images')) {
                     const imageStore = db.createObjectStore('images', { keyPath: 'id' });
-                    console.log('Created images object store');
+
                 }
                 
                 // Create object store for metadata
                 if (!db.objectStoreNames.contains('metadata')) {
                     const metadataStore = db.createObjectStore('metadata', { keyPath: 'key' });
-                    console.log('Created metadata object store');
+
                 }
             };
         });
@@ -85,11 +84,10 @@ class ExpenseTracker {
 
     setupEventListeners() {
         if (this.eventListenersSetup) {
-            console.log('Event listeners already set up, skipping...');
+
             return;
         }
-        
-        console.log('Setting up event listeners...');
+
         this.eventListenersSetup = true;
         
         // Navigation
@@ -114,7 +112,7 @@ class ExpenseTracker {
 
         // Receipt upload
         document.getElementById('receipt-input').addEventListener('change', (e) => {
-            console.log('Receipt input change event triggered');
+
             this.handleReceiptUpload(e);
         });
 
@@ -132,7 +130,7 @@ class ExpenseTracker {
         });
 
         document.getElementById('all-receipt-input').addEventListener('change', (e) => {
-            console.log('All Transactions receipt input change event triggered');
+
             this.handleAllReceiptUpload(e);
         });
 
@@ -287,7 +285,7 @@ class ExpenseTracker {
             this.shareTransactionsList();
         });
 
-        document.getElementById('share-receipts').addEventListener('click', () => {
+        document.getElementById('share-receipts-modal').addEventListener('click', () => {
             this.shareReceipts();
             this.closeModal('share-modal');
         });
@@ -314,7 +312,7 @@ class ExpenseTracker {
         const toggleRecentBtn = document.getElementById('toggle-recent-selection');
         if (toggleRecentBtn) {
             toggleRecentBtn.addEventListener('click', () => {
-                console.log('Toggle recent selection clicked');
+
                 this.toggleSelectionMode('recent');
             });
         } else {
@@ -324,7 +322,7 @@ class ExpenseTracker {
         const selectAllRecentBtn = document.getElementById('select-all-recent');
         if (selectAllRecentBtn) {
             selectAllRecentBtn.addEventListener('click', () => {
-                console.log('Select all recent clicked');
+
                 this.selectAllTransactions('recent');
             });
         } else {
@@ -334,7 +332,7 @@ class ExpenseTracker {
         const clearSelectionRecentBtn = document.getElementById('clear-selection-recent');
         if (clearSelectionRecentBtn) {
             clearSelectionRecentBtn.addEventListener('click', () => {
-                console.log('Clear selection recent clicked');
+
                 this.clearSelection('recent');
             });
         } else {
@@ -344,7 +342,7 @@ class ExpenseTracker {
         const bulkEditRecentBtn = document.getElementById('bulk-edit-recent');
         if (bulkEditRecentBtn) {
             bulkEditRecentBtn.addEventListener('click', () => {
-                console.log('Bulk edit recent clicked');
+
                 this.openBulkEditModal('recent');
             });
         } else {
@@ -354,7 +352,7 @@ class ExpenseTracker {
         const bulkDeleteRecentBtn = document.getElementById('bulk-delete-recent');
         if (bulkDeleteRecentBtn) {
             bulkDeleteRecentBtn.addEventListener('click', () => {
-                console.log('Bulk delete recent clicked');
+
                 this.bulkDeleteTransactions('recent');
             });
         } else {
@@ -365,7 +363,7 @@ class ExpenseTracker {
         const toggleAllBtn = document.getElementById('toggle-all-selection');
         if (toggleAllBtn) {
             toggleAllBtn.addEventListener('click', () => {
-                console.log('Toggle all selection clicked');
+
                 this.toggleSelectionMode('all');
             });
         } else {
@@ -375,7 +373,7 @@ class ExpenseTracker {
         const selectAllAllBtn = document.getElementById('select-all-all');
         if (selectAllAllBtn) {
             selectAllAllBtn.addEventListener('click', () => {
-                console.log('Select all all clicked');
+
                 this.selectAllTransactions('all');
             });
         } else {
@@ -385,7 +383,7 @@ class ExpenseTracker {
         const clearSelectionAllBtn = document.getElementById('clear-selection-all');
         if (clearSelectionAllBtn) {
             clearSelectionAllBtn.addEventListener('click', () => {
-                console.log('Clear selection all clicked');
+
                 this.clearSelection('all');
             });
         } else {
@@ -395,7 +393,7 @@ class ExpenseTracker {
         const bulkEditAllBtn = document.getElementById('bulk-edit-all');
         if (bulkEditAllBtn) {
             bulkEditAllBtn.addEventListener('click', () => {
-                console.log('Bulk edit all clicked');
+
                 this.openBulkEditModal('all');
             });
         } else {
@@ -405,7 +403,7 @@ class ExpenseTracker {
         const bulkDeleteAllBtn = document.getElementById('bulk-delete-all');
         if (bulkDeleteAllBtn) {
             bulkDeleteAllBtn.addEventListener('click', () => {
-                console.log('Bulk delete all clicked');
+
                 this.bulkDeleteTransactions('all');
             });
         } else {
@@ -416,7 +414,7 @@ class ExpenseTracker {
         const closeBulkEditBtn = document.getElementById('close-bulk-edit-modal');
         if (closeBulkEditBtn) {
             closeBulkEditBtn.addEventListener('click', () => {
-                console.log('Close bulk edit modal clicked');
+
                 this.closeModal('bulk-edit-modal');
             });
         } else {
@@ -426,7 +424,7 @@ class ExpenseTracker {
         const cancelBulkEditBtn = document.getElementById('cancel-bulk-edit');
         if (cancelBulkEditBtn) {
             cancelBulkEditBtn.addEventListener('click', () => {
-                console.log('Cancel bulk edit clicked');
+
                 this.closeModal('bulk-edit-modal');
             });
         } else {
@@ -437,7 +435,7 @@ class ExpenseTracker {
         if (bulkEditForm) {
             bulkEditForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                console.log('Bulk edit form submitted');
+
                 this.applyBulkEdit();
             });
         } else {
@@ -608,23 +606,16 @@ class ExpenseTracker {
     }
 
     handleReceiptUpload(event) {
-        console.log('handleReceiptUpload called', event);
-        
+
         const files = event.target.files;
-        console.log('Files available:', files.length);
-        
+
         if (!files || files.length === 0) {
-            console.log('No files selected or user cancelled');
+
             return;
         }
 
         const file = files[0];
-        console.log('Processing file:', {
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            lastModified: new Date(file.lastModified)
-        });
+        // File processing info removed for production
 
         if (!file.type.startsWith('image/')) {
             this.showToast('Please select an image file', 'error');
@@ -641,28 +632,25 @@ class ExpenseTracker {
 
         // Show processing message
         this.showToast('Processing image...', 'success');
-        console.log('Starting to process image...');
 
         const reader = new FileReader();
         
         reader.onloadstart = () => {
-            console.log('FileReader started loading');
+
         };
         
         reader.onprogress = (e) => {
             if (e.lengthComputable) {
                 const percentComplete = (e.loaded / e.total) * 100;
-                console.log('Loading progress:', percentComplete.toFixed(1) + '%');
+
             }
         };
         
         reader.onload = async (e) => {
-            console.log('FileReader completed. Result length:', e.target.result?.length);
-            
+
             if (e.target.result && e.target.result.length > 0) {
             this.currentReceiptImage = e.target.result;
-                console.log('Image stored in currentReceiptImage');
-                
+
                 // Show success message and form
                 this.showToast('Image loaded successfully! 📸', 'success');
             this.showReceiptForm();
@@ -681,7 +669,7 @@ class ExpenseTracker {
         };
         
         reader.onabort = () => {
-            console.log('FileReader aborted');
+
             this.showToast('Image loading was cancelled', 'error');
         };
         
@@ -698,19 +686,17 @@ class ExpenseTracker {
         document.getElementById('upload-area').style.display = 'none';
         document.getElementById('receipt-form').style.display = 'block';
         document.getElementById('receipt-date').value = new Date().toISOString().split('T')[0];
-        
-        console.log('Receipt form shown');
+
     }
 
     addImagePreview(imageSrc) {
         try {
-            console.log('Adding image preview...');
-            
+
             // Remove existing preview if any
             const existingPreview = document.getElementById('image-preview');
             if (existingPreview) {
                 existingPreview.remove();
-                console.log('Removed existing preview');
+
             }
 
             // Create new preview
@@ -728,7 +714,7 @@ class ExpenseTracker {
             const receiptForm = document.getElementById('receipt-form');
             if (receiptForm) {
                 receiptForm.insertBefore(previewContainer, receiptForm.firstChild);
-                console.log('Image preview added to form successfully');
+
             } else {
                 console.warn('Receipt form not found, cannot add preview - this is normal during form transition');
                 // Don't throw error, just log it as a warning
@@ -739,15 +725,11 @@ class ExpenseTracker {
         }
     }
 
-
     async saveReceipt() {
         const amount = parseFloat(document.getElementById('receipt-amount').value);
         const category = document.getElementById('receipt-category').value;
         const description = document.getElementById('receipt-description').value;
         const date = document.getElementById('receipt-date').value;
-
-        console.log('Saving receipt:', { amount, category, description, date });
-        console.log('Current receipt image exists:', !!this.currentReceiptImage);
 
         if (!amount || !category || !date) {
             this.showToast('Please fill in all required fields', 'error');
@@ -797,16 +779,13 @@ class ExpenseTracker {
             timestamp: new Date().toISOString()
         };
 
-            console.log('Adding receipt:', receipt);
-            console.log('Adding transaction:', transaction);
-
         this.receipts.unshift(receipt);
         this.transactions.unshift(transaction);
             
             // Save data with error handling
             try {
         this.saveData();
-                console.log('Data saved successfully');
+
             } catch (saveError) {
                 console.error('Error saving data:', saveError);
                 this.showToast('Error saving data to storage', 'error');
@@ -848,7 +827,7 @@ class ExpenseTracker {
         }
         
         this.currentReceiptImage = null;
-        console.log('Receipt cancelled and cleaned up');
+
     }
 
     // All Transactions Camera Methods
@@ -865,18 +844,15 @@ class ExpenseTracker {
     }
 
     handleAllReceiptUpload(event) {
-        console.log('handleAllReceiptUpload called', event);
-        
+
         const files = event.target.files;
-        console.log('Files available:', files.length);
-        
+
         if (!files || files.length === 0) {
-            console.log('No files selected');
+
             return;
         }
 
         const file = files[0];
-        console.log('Selected file:', file.name, 'Size:', file.size, 'Type:', file.type);
 
         // Validate file size (10MB limit)
         if (file.size > 10 * 1024 * 1024) {
@@ -890,28 +866,24 @@ class ExpenseTracker {
             return;
         }
 
-        console.log('File validation passed, reading file...');
-        
         const reader = new FileReader();
         
         reader.onloadstart = () => {
-            console.log('FileReader started loading');
+
         };
         
         reader.onprogress = (e) => {
             if (e.lengthComputable) {
                 const percentLoaded = Math.round((e.loaded / e.total) * 100);
-                console.log(`FileReader progress: ${percentLoaded}%`);
+
             }
         };
         
         reader.onload = async (e) => {
-            console.log('FileReader completed. Result length:', e.target.result?.length);
-            
+
             if (e.target.result && e.target.result.length > 0) {
                 this.currentReceiptImage = e.target.result;
-                console.log('Image stored in currentReceiptImage');
-                
+
                 // Show success message and form
                 this.showToast('Image loaded successfully! 📸', 'success');
                 this.showAllReceiptForm();
@@ -930,13 +902,13 @@ class ExpenseTracker {
         };
         
         reader.onabort = () => {
-            console.log('FileReader aborted');
+
             this.showToast('File reading cancelled', 'info');
         };
         
         try {
             reader.readAsDataURL(file);
-            console.log('FileReader.readAsDataURL() called');
+
         } catch (error) {
             console.error('Error calling readAsDataURL:', error);
             this.showToast('Error processing file: ' + error.message, 'error');
@@ -947,19 +919,17 @@ class ExpenseTracker {
         document.getElementById('all-upload-area').style.display = 'none';
         document.getElementById('all-receipt-form').style.display = 'block';
         document.getElementById('all-receipt-date').value = new Date().toISOString().split('T')[0];
-        
-        console.log('All Transactions receipt form shown');
+
     }
 
     addAllImagePreview(imageSrc) {
         try {
-            console.log('Adding image preview to All Transactions...');
-            
+
             // Remove existing preview if any
             const existingPreview = document.getElementById('all-image-preview');
             if (existingPreview) {
                 existingPreview.remove();
-                console.log('Removed existing All Transactions preview');
+
             }
 
             // Create new preview
@@ -977,7 +947,7 @@ class ExpenseTracker {
             const receiptForm = document.getElementById('all-receipt-form');
             if (receiptForm) {
                 receiptForm.insertBefore(previewContainer, receiptForm.firstChild);
-                console.log('Image preview added to All Transactions form successfully');
+
             } else {
                 console.warn('All Transactions receipt form not found, cannot add preview - this is normal during form transition');
             }
@@ -991,9 +961,6 @@ class ExpenseTracker {
         const category = document.getElementById('all-receipt-category').value;
         const description = document.getElementById('all-receipt-description').value;
         const date = document.getElementById('all-receipt-date').value;
-
-        console.log('Saving All Transactions receipt:', { amount, category, description, date });
-        console.log('Current receipt image exists:', !!this.currentReceiptImage);
 
         if (!amount || !category || !date) {
             this.showToast('Please fill in all required fields', 'error');
@@ -1043,16 +1010,13 @@ class ExpenseTracker {
             timestamp: new Date().toISOString()
         };
 
-            console.log('Adding receipt:', receipt);
-            console.log('Adding transaction:', transaction);
-
         this.receipts.unshift(receipt);
         this.transactions.unshift(transaction);
             
             // Save data with error handling
             try {
         this.saveData();
-                console.log('Data saved successfully');
+
             } catch (saveError) {
                 console.error('Error saving data:', saveError);
                 this.showToast('Error saving data to storage', 'error');
@@ -1093,7 +1057,7 @@ class ExpenseTracker {
         }
         
         this.currentReceiptImage = null;
-        console.log('All Transactions receipt cancelled and cleaned up');
+
     }
 
     // Settings and Category Management
@@ -1260,7 +1224,7 @@ class ExpenseTracker {
     updateCurrencyDisplays() {
         // This would update all currency displays throughout the app
         // For now, we'll just show a success message
-        console.log('Currency symbol updated to:', this.currencySymbol);
+
     }
 
     resetSettings() {
@@ -1435,7 +1399,7 @@ class ExpenseTracker {
         document.getElementById('all-transaction-date').value = new Date().toISOString().split('T')[0];
         // Clear editing ID
         delete document.getElementById('all-transaction-form').dataset.editingId;
-        console.log('All Transactions form cancelled and reset');
+
     }
 
     updateDashboard() {
@@ -1668,7 +1632,6 @@ class ExpenseTracker {
         return categories[category] || category;
     }
 
-
     getMonthlyData() {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const currentDate = new Date();
@@ -1877,19 +1840,10 @@ This report was generated by Business Expense Tracker
         try {
             const transactionsStr = JSON.stringify(this.transactions);
             const receiptsStr = JSON.stringify(this.receipts);
-            
-            console.log('Saving data:', {
-                transactions: this.transactions.length,
-                receipts: this.receipts.length,
-                transactionsSize: transactionsStr.length,
-                receiptsSize: receiptsStr.length
-            });
-            
+
             localStorage.setItem('transactions', transactionsStr);
             localStorage.setItem('receipts', receiptsStr);
-            
-            console.log('Data saved successfully to localStorage');
-            
+
         } catch (error) {
             console.error('Error saving data:', error);
             
@@ -1939,22 +1893,22 @@ This report was generated by Business Expense Tracker
 
     // Modal Management
     openModal(modalId) {
-        console.log(`Opening modal: ${modalId}`);
+
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'block';
-            console.log(`Modal ${modalId} opened`);
+
         } else {
             console.error(`Modal not found: ${modalId}`);
         }
     }
 
     closeModal(modalId) {
-        console.log(`Closing modal: ${modalId}`);
+
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'none';
-            console.log(`Modal ${modalId} closed`);
+
         } else {
             console.error(`Modal not found: ${modalId}`);
         }
@@ -2233,7 +2187,7 @@ ${sign}${amount}
                 title: 'Business Expense Tracker',
                 text: text
             }).catch((error) => {
-                console.log('Error sharing:', error);
+
                 this.fallbackShare(text);
             });
         } else {
@@ -2439,19 +2393,7 @@ ${sign}${amount}
     async checkStorageStatus() {
         try {
             const storageInfo = await this.getStorageInfo();
-            
-            console.log('📊 Enhanced Storage Status:', {
-                transactions: this.transactions.length + ' items',
-                receipts: this.receipts.length + ' items',
-                localStorage: storageInfo.localStorage.sizeFormatted,
-                indexedDB: `${storageInfo.indexedDB.sizeFormatted} (${storageInfo.indexedDB.imageCount} images)`,
-                totalStorage: storageInfo.total.sizeFormatted,
-                storageType: this.db ? 'IndexedDB + localStorage' : 'localStorage only',
-                receiptsWithImages: this.receipts.filter(r => 
-                    r.image && (r.image.startsWith('data:image/') || r.image.startsWith('indexeddb:'))
-                ).length
-            });
-            
+
             // More generous warning since IndexedDB has much higher limits
             const warningThreshold = this.db ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for IndexedDB, 5MB for localStorage only
             
@@ -2461,9 +2403,9 @@ ${sign}${amount}
             
             // Show storage upgrade message if using localStorage only
             if (!this.db) {
-                console.log('💡 Tip: IndexedDB is not available. Using localStorage with limited capacity.');
+
             } else {
-                console.log('✅ Using IndexedDB for efficient image storage with higher capacity.');
+
             }
             
         } catch (error) {
@@ -2478,8 +2420,6 @@ ${sign}${amount}
             this.showToast('Transaction not found', 'error');
             return;
         }
-
-        console.log('Viewing transaction details:', transaction);
 
         // Find associated receipt if exists
         const receipt = transaction.receiptId ? this.receipts.find(r => r.id === transaction.receiptId) : null;
@@ -2606,13 +2546,12 @@ ${sign}${amount}
     // IndexedDB Image Storage Methods
     async storeImageInDB(imageId, imageData, metadata = {}) {
         if (!this.db) {
-            console.log('IndexedDB not available, using localStorage fallback');
+
             return imageData; // Return original data for localStorage storage
         }
 
         try {
-            console.log(`Storing image ${imageId} in IndexedDB...`);
-            
+
             // Convert data URL to blob for more efficient storage
             const response = await fetch(imageData);
             const blob = await response.blob();
@@ -2632,8 +2571,7 @@ ${sign}${amount}
             };
             
             await store.put(imageRecord);
-            console.log(`Image ${imageId} stored successfully in IndexedDB (${blob.size} bytes)`);
-            
+
             // Return a reference ID instead of the full image data
             return `indexeddb:${imageId}`;
             
@@ -2656,8 +2594,7 @@ ${sign}${amount}
 
         try {
             const imageId = imageReference.replace('indexeddb:', '');
-            console.log(`Retrieving image ${imageId} from IndexedDB...`);
-            
+
             const transaction = this.db.transaction(['images'], 'readonly');
             const store = transaction.objectStore('images');
             const request = store.get(imageId);
@@ -2667,7 +2604,7 @@ ${sign}${amount}
                     if (request.result) {
                         const blob = request.result.blob;
                         const url = URL.createObjectURL(blob);
-                        console.log(`Image ${imageId} retrieved from IndexedDB`);
+
                         resolve(url);
                     } else {
                         console.error(`Image ${imageId} not found in IndexedDB`);
@@ -2736,7 +2673,7 @@ ${sign}${amount}
 
     async deleteImageFromDB(imageReference) {
         if (!imageReference || !imageReference.startsWith('indexeddb:')) {
-            console.log('Not an IndexedDB image reference, nothing to delete');
+
             return true;
         }
 
@@ -2747,8 +2684,7 @@ ${sign}${amount}
 
         try {
             const imageId = imageReference.replace('indexeddb:', '');
-            console.log(`Deleting image ${imageId} from IndexedDB...`);
-            
+
             const transaction = this.db.transaction(['images'], 'readwrite');
             const store = transaction.objectStore('images');
             
@@ -2756,7 +2692,7 @@ ${sign}${amount}
                 const request = store.delete(imageId);
                 
                 request.onsuccess = () => {
-                    console.log(`Image ${imageId} deleted from IndexedDB successfully`);
+
                     resolve(true);
                 };
                 
@@ -2774,8 +2710,7 @@ ${sign}${amount}
 
     // Transaction Management Methods
     async deleteTransaction(transactionId) {
-        console.log(`Deleting transaction: ${transactionId}`);
-        
+
         try {
             // Find the transaction
             const transactionIndex = this.transactions.findIndex(t => t.id === transactionId);
@@ -2799,13 +2734,12 @@ ${sign}${amount}
                     
                     // Remove receipt
                     this.receipts.splice(receiptIndex, 1);
-                    console.log('Associated receipt deleted');
+
                 }
             }
 
             // Remove transaction
             this.transactions.splice(transactionIndex, 1);
-            console.log('Transaction deleted');
 
             // Save data
             this.saveData();
@@ -2828,8 +2762,7 @@ ${sign}${amount}
     }
 
     async deleteReceipt(receiptId) {
-        console.log(`Deleting receipt: ${receiptId}`);
-        
+
         try {
             // Find the receipt
             const receiptIndex = this.receipts.findIndex(r => r.id === receiptId);
@@ -2844,7 +2777,7 @@ ${sign}${amount}
             const transactionIndex = this.transactions.findIndex(t => t.receiptId === receiptId);
             if (transactionIndex !== -1) {
                 this.transactions.splice(transactionIndex, 1);
-                console.log('Associated transaction deleted');
+
             }
             
             // Delete image from IndexedDB if it exists
@@ -2854,7 +2787,6 @@ ${sign}${amount}
             
             // Remove receipt
             this.receipts.splice(receiptIndex, 1);
-            console.log('Receipt deleted');
 
             // Save data
             this.saveData();
@@ -2877,8 +2809,7 @@ ${sign}${amount}
     }
 
     async deleteTransactionImage(transactionId) {
-        console.log(`Deleting image for transaction: ${transactionId}`);
-        
+
         try {
             // Find the transaction
             const transaction = this.transactions.find(t => t.id === transactionId);
@@ -2911,7 +2842,6 @@ ${sign}${amount}
             
             // Remove image reference from receipt
             receipt.image = null;
-            console.log('Image deleted from receipt');
 
             // Save data
             this.saveData();
@@ -2935,7 +2865,7 @@ ${sign}${amount}
 
     // Chart Management Methods
     initializeChart() {
-        console.log('Initializing chart...');
+
         try {
             const ctx = document.getElementById('monthlyChart');
             if (!ctx) {
@@ -2996,16 +2926,16 @@ ${sign}${amount}
             });
 
             this.updateChart();
-            console.log('Chart initialized successfully');
+
         } catch (error) {
             console.error('Error initializing chart:', error);
         }
     }
 
     updateChart() {
-        console.log('Updating chart...');
+
         if (!this.chart) {
-            console.log('Chart not initialized, skipping update');
+
             return;
         }
 
@@ -3019,7 +2949,7 @@ ${sign}${amount}
             this.chart.data.datasets[1].data = monthlyData.expenses;
 
             this.chart.update();
-            console.log('Chart updated with data:', monthlyData);
+
         } catch (error) {
             console.error('Error updating chart:', error);
         }
@@ -3027,11 +2957,9 @@ ${sign}${amount}
 
     // Bulk Operations Methods
     toggleSelectionMode(context) {
-        console.log(`Toggling selection mode for context: ${context}`);
-        
+
         this.selectionMode[context] = !this.selectionMode[context];
-        console.log(`Selection mode for ${context} is now: ${this.selectionMode[context]}`);
-        
+
         const bulkActions = document.getElementById(`${context}-bulk-actions`);
         const toggleBtn = document.getElementById(`toggle-${context}-selection`);
         
@@ -3049,13 +2977,13 @@ ${sign}${amount}
             bulkActions.style.display = 'block';
             toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
             toggleBtn.title = 'Exit Selection Mode';
-            console.log(`Enabled selection mode for ${context}`);
+
         } else {
             bulkActions.style.display = 'none';
             toggleBtn.innerHTML = '<i class="fas fa-check-square"></i>';
             toggleBtn.title = 'Select Multiple';
             this.clearSelection(context);
-            console.log(`Disabled selection mode for ${context}`);
+
         }
         
         // Re-render transactions to show/hide checkboxes
@@ -3065,28 +2993,24 @@ ${sign}${amount}
             } else {
                 this.renderAllTransactions();
             }
-            console.log(`Re-rendered transactions for ${context}`);
+
         } catch (error) {
             console.error(`Error re-rendering transactions for ${context}:`, error);
         }
     }
 
     selectAllTransactions(context) {
-        console.log(`Selecting all transactions for context: ${context}`);
-        
+
         const transactions = context === 'recent' 
             ? this.transactions.slice(0, 5) 
             : this.transactions;
-            
-        console.log(`Found ${transactions.length} transactions to select`);
-            
+
         this.selectedTransactions[context].clear();
         transactions.forEach(t => {
             const id = String(t.id);
             this.selectedTransactions[context].add(id);
         });
-        
-        console.log(`Selected ${this.selectedTransactions[context].size} transactions`);
+
         this.updateSelectionDisplay(context);
         this.updateTransactionCheckboxes(context);
     }
@@ -3098,20 +3022,18 @@ ${sign}${amount}
     }
 
     toggleTransactionSelection(transactionId, context) {
-        console.log(`Toggling selection for transaction ${transactionId} in context ${context}`);
-        
+
         // Ensure transactionId is a string for consistent comparison
         const id = String(transactionId);
         
         if (this.selectedTransactions[context].has(id)) {
             this.selectedTransactions[context].delete(id);
-            console.log(`Removed transaction ${id} from selection`);
+
         } else {
             this.selectedTransactions[context].add(id);
-            console.log(`Added transaction ${id} to selection`);
+
         }
-        
-        console.log(`Selected transactions for ${context}:`, Array.from(this.selectedTransactions[context]));
+
         this.updateSelectionDisplay(context);
     }
 
@@ -3122,8 +3044,7 @@ ${sign}${amount}
 
     updateTransactionCheckboxes(context) {
         const checkboxes = document.querySelectorAll(`.transaction-checkbox-${context}`);
-        console.log(`Updating ${checkboxes.length} checkboxes for context ${context}`);
-        
+
         checkboxes.forEach(checkbox => {
             const transactionId = String(checkbox.dataset.transactionId);
             const isSelected = this.selectedTransactions[context].has(transactionId);
@@ -3141,11 +3062,9 @@ ${sign}${amount}
     }
 
     openBulkEditModal(context) {
-        console.log(`Opening bulk edit modal for context: ${context}`);
-        
+
         const selectedCount = this.selectedTransactions[context].size;
-        console.log(`Selected count: ${selectedCount}`);
-        
+
         if (selectedCount === 0) {
             this.showToast('Please select transactions to edit', 'error');
             return;
@@ -3164,7 +3083,7 @@ ${sign}${amount}
         const bulkEditForm = document.getElementById('bulk-edit-form');
         if (bulkEditForm) {
             bulkEditForm.reset();
-            console.log('Bulk edit form reset');
+
         } else {
             console.error('bulk-edit-form not found');
         }
@@ -3180,12 +3099,11 @@ ${sign}${amount}
             cb.checked = false;
             cb.dispatchEvent(new Event('change'));
         });
-        console.log(`Reset ${checkboxes.length} checkboxes`);
 
         // Populate categories based on default type
         try {
             this.updateBulkEditCategories();
-            console.log('Updated bulk edit categories');
+
         } catch (error) {
             console.error('Error updating bulk edit categories:', error);
         }
@@ -3346,9 +3264,9 @@ let expenseTracker;
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
     if (expenseTracker) {
-        console.log('App already initialized, skipping...');
+
         return;
     }
-    console.log('DOM loaded, initializing app...');
+
     expenseTracker = new ExpenseTracker();
 });
