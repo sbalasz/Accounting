@@ -295,22 +295,24 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        import { auth, db, encryptionManager } from './firebase-config.js';
-        import { 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword,
-            onAuthStateChanged,
-            signOut
-        } from 'firebase/auth';
-        import { 
-            doc, 
-            setDoc, 
-            getDoc, 
-            collection, 
-            addDoc,
-            updateDoc,
-            serverTimestamp 
-        } from 'firebase/firestore';
+        try {
+            // Import Firebase modules
+            const { auth, db, encryptionManager } = await import('./firebase-config.js');
+            const { 
+                signInWithEmailAndPassword, 
+                createUserWithEmailAndPassword,
+                onAuthStateChanged,
+                signOut
+            } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+            const { 
+                doc, 
+                setDoc, 
+                getDoc, 
+                collection, 
+                addDoc,
+                updateDoc,
+                serverTimestamp 
+            } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
         class FirebaseAuth {
             constructor() {
@@ -501,12 +503,18 @@
             }
         }
         
-        // Initialize Firebase authentication
-        const firebaseAuth = new FirebaseAuth();
-        
-        // Check if already authenticated
-        if (sessionStorage.getItem('authenticated') === 'true') {
-            window.location.href = 'index.html';
+            // Initialize Firebase authentication
+            const firebaseAuth = new FirebaseAuth();
+            
+            // Check if already authenticated
+            if (sessionStorage.getItem('authenticated') === 'true') {
+                window.location.href = 'index.html';
+            }
+            
+        } catch (error) {
+            console.error('Firebase initialization failed:', error);
+            document.getElementById('error').textContent = 'Firebase connection failed. Please check your internet connection and try again.';
+            document.getElementById('error').style.display = 'block';
         }
     </script>
 </body>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Debug - Business Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>Firebase Debug Tool</h1>
+        <p>This tool helps diagnose Firebase authentication issues.</p>
+        
+        <div id="firebase-status" class="status info">Checking Firebase connection...</div>
+        
+        <div class="form-group">
+            <h3>Test Registration</h3>
+            <label for="reg-email">Email:</label>
+            <input type="email" id="reg-email" placeholder="test@example.com">
+            
+            <label for="reg-password">Password:</label>
+            <input type="password" id="reg-password" placeholder="test123">
+            
+            <button onclick="testRegister()">Test Register</button>
+        </div>
+        
+        <div class="form-group">
+            <h3>Test Login</h3>
+            <label for="login-email">Email:</label>
+            <input type="email" id="login-email" placeholder="test@example.com">
+            
+            <label for="login-password">Password:</label>
+            <input type="password" id="login-password" placeholder="test123">
+            
+            <button onclick="testLogin()">Test Login</button>
+        </div>
+        
+        <div class="form-group">
+            <button onclick="checkAuth()">Check Current Auth</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div id="debug-log" class="log">Starting debug session...\n</div>
+    </div>
+
+    <script type="module">
+        let auth, db;
+        let signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged;
+        let doc, setDoc, serverTimestamp;
+        
+        function log(message) {
+            const logElement = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        function setStatus(message, type = 'info') {
+            const statusElement = document.getElementById('firebase-status');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+        
+        async function initFirebase() {
+            try {
+                log('Initializing Firebase...');
+                
+                // Import Firebase modules
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                const { getAuth, signInWithEmailAndPassword: signIn, createUserWithEmailAndPassword: createUser, onAuthStateChanged: onAuth } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                const { getFirestore, doc: docRef, setDoc: setDocument, serverTimestamp: timestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                
+                // Store functions globally
+                signInWithEmailAndPassword = signIn;
+                createUserWithEmailAndPassword = createUser;
+                onAuthStateChanged = onAuth;
+                doc = docRef;
+                setDoc = setDocument;
+                serverTimestamp = timestamp;
+                
+                log('Firebase modules imported successfully');
+                
+                // Firebase configuration
+                const firebaseConfig = {
+                    apiKey: "AIzaSyB36Qd7FG3ztdOvnqBiix1kF_gN6JJSdjA",
+                    authDomain: "business-tracker-app-33c3d.firebaseapp.com",
+                    projectId: "business-tracker-app-33c3d",
+                    storageBucket: "business-tracker-app-33c3d.firebasestorage.app",
+                    messagingSenderId: "965528133229",
+                    appId: "1:965528133229:web:92d0ab17808e5ec11da964"
+                };
+                
+                log('Firebase config loaded');
+                
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                log('Firebase initialized successfully');
+                setStatus('Firebase connected successfully', 'success');
+                
+                // Check current auth state
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        log(`User is signed in: ${user.email} (UID: ${user.uid})`);
+                        setStatus(`Signed in as: ${user.email}`, 'success');
+                    } else {
+                        log('No user is signed in');
+                        setStatus('No user signed in', 'info');
+                    }
+                });
+                
+            } catch (error) {
+                log(`Firebase initialization failed: ${error.message}`);
+                setStatus(`Firebase connection failed: ${error.message}`, 'error');
+                console.error('Firebase error:', error);
+            }
+        }
+        
+        window.testRegister = async function() {
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            
+            if (!email || !password) {
+                log('Please enter email and password');
+                return;
+            }
+            
+            try {
+                log(`Attempting to register: ${email}`);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                log(`Registration successful! UID: ${user.uid}`);
+                
+                // Create user document
+                await setDoc(doc(db, 'users', user.uid), {
+                    email: email,
+                    createdAt: serverTimestamp()
+                });
+                log('User document created in Firestore');
+                
+            } catch (error) {
+                log(`Registration failed: ${error.code} - ${error.message}`);
+            }
+        };
+        
+        window.testLogin = async function() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                log('Please enter email and password');
+                return;
+            }
+            
+            try {
+                log(`Attempting to login: ${email}`);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                log(`Login successful! UID: ${user.uid}`);
+                
+            } catch (error) {
+                log(`Login failed: ${error.code} - ${error.message}`);
+            }
+        };
+        
+        window.checkAuth = function() {
+            if (auth && auth.currentUser) {
+                const user = auth.currentUser;
+                log(`Current user: ${user.email} (UID: ${user.uid})`);
+                log(`Email verified: ${user.emailVerified}`);
+                log(`Creation time: ${user.metadata.creationTime}`);
+                log(`Last sign in: ${user.metadata.lastSignInTime}`);
+            } else {
+                log('No current user');
+            }
+        };
+        
+        window.clearLog = function() {
+            document.getElementById('debug-log').textContent = 'Log cleared...\n';
+        };
+        
+        // Initialize on page load
+        initFirebase();
+    </script>
+</body>
+</html>
