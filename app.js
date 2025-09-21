@@ -8,10 +8,10 @@ if (sessionStorage.getItem('authenticated') !== 'true') {
 
 class ExpenseTracker {
     constructor() {
-        // Get current user
+        // Get current user (all users are Firebase users now)
         this.currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
         this.userId = this.currentUser?.id || 'default';
-        this.isFirebaseUser = sessionStorage.getItem('firebaseUser') === 'true';
+        this.isFirebaseUser = true; // All users use Firebase authentication
         
         // Initialize app state
         this.dataManager = null;
@@ -68,58 +68,15 @@ class ExpenseTracker {
             }
         }
         
-        // Initialize Firebase first if it's a Firebase user
-        if (this.isFirebaseUser) {
-            this.initFirebase().then(() => {
-                this.init();
-            }).catch((error) => {
-                console.error('Firebase init failed, continuing with basic init:', error);
-                this.init();
-            });
-        } else {
-        this.initDatabase().then(() => {
-        this.init();
+        // Initialize Firebase (all users use Firebase now)
+        this.initFirebase().then(() => {
+            this.init();
         }).catch((error) => {
-            console.error('Database init failed, continuing with basic init:', error);
+            console.error('Firebase init failed, continuing with basic init:', error);
             this.init();
         });
-        }
     }
 
-    async initDatabase() {
-        return new Promise((resolve, reject) => {
-            
-            const request = indexedDB.open('ExpenseTrackerDB', 1);
-            
-            request.onerror = () => {
-                console.error('Failed to open IndexedDB:', request.error);
-                this.showToast('Warning: Advanced image storage not available. Using basic storage.', 'error');
-                resolve(); // Continue without IndexedDB
-            };
-            
-            request.onsuccess = () => {
-                this.db = request.result;
-
-                resolve();
-            };
-            
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                
-                // Create object store for images
-                if (!db.objectStoreNames.contains('images')) {
-                    const imageStore = db.createObjectStore('images', { keyPath: 'id' });
-
-                }
-                
-                // Create object store for metadata
-                if (!db.objectStoreNames.contains('metadata')) {
-                    const metadataStore = db.createObjectStore('metadata', { keyPath: 'key' });
-
-                }
-            };
-        });
-    }
 
     init() {
         console.log('Initializing app...');
