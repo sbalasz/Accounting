@@ -53,15 +53,15 @@ window.FirebaseIntegration = class FirebaseIntegration {
                 return;
             }
 
-            // Load Firebase SDKs
+            // Load Firebase SDKs (compat builds for global firebase namespace)
             const script1 = document.createElement('script');
-            script1.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+            script1.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js';
             script1.onload = () => {
                 const script2 = document.createElement('script');
-                script2.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+                script2.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js';
                 script2.onload = () => {
                     const script3 = document.createElement('script');
-                    script3.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+                    script3.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js';
                     script3.onload = () => {
                         resolve();
                     };
