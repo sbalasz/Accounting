@@ -2,12 +2,8 @@
 
 // Authentication check
 if (sessionStorage.getItem('authenticated') !== 'true') {
-    // Check if Firebase auth is available
-    if (sessionStorage.getItem('firebaseUser') === 'true') {
-        window.location.href = 'firebase-auth.html';
-    } else {
-        window.location.href = 'user-auth.html';
-    }
+    // Default to cloud login (Firebase auth)
+    window.location.href = 'firebase-auth.html';
 }
 
 class ExpenseTracker {
@@ -1335,9 +1331,12 @@ class ExpenseTracker {
             // Clear authentication
             sessionStorage.removeItem('authenticated');
             sessionStorage.removeItem('accessCode');
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('firebaseUser');
+            sessionStorage.removeItem('firebasePassword');
             
-            // Redirect to auth page
-            window.location.href = 'auth.html';
+            // Redirect to cloud login page
+            window.location.href = 'firebase-auth.html';
         }
     }
 
