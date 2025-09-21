@@ -17,15 +17,11 @@ class ExpenseTracker {
         this.userId = this.currentUser?.id || 'default';
         this.isFirebaseUser = sessionStorage.getItem('firebaseUser') === 'true';
         
-        // Initialize data manager
+        // Initialize app state
         this.dataManager = null;
-        if (this.isFirebaseUser) {
-            this.initFirebase();
-        } else {
-            // Load user-specific data from localStorage
-            this.transactions = this.loadUserData('transactions') || [];
-            this.receipts = this.loadUserData('receipts') || [];
-        }
+        this.firebaseIntegration = null;
+        this.transactions = [];
+        this.receipts = [];
         this.currentTab = 'dashboard';
         this.currentTransactionType = 'expense';
         this.chart = null;
@@ -42,7 +38,7 @@ class ExpenseTracker {
             all: new Set()
         };
         
-        // Wait for DOM to be ready
+        // Wait for DOM to be ready before initializing
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => this.startInitialization(), 100);
@@ -251,11 +247,6 @@ class ExpenseTracker {
         // Logout functionality
         document.getElementById('logout-btn').addEventListener('click', () => {
             this.logout();
-        });
-
-        // Test Firebase transaction (for debugging)
-        document.getElementById('test-firebase-transaction').addEventListener('click', () => {
-            this.testFirebaseTransaction();
         });
 
         // Export functions
@@ -622,10 +613,8 @@ class ExpenseTracker {
     }
 
     async addTransaction() {
-        console.log('=== addTransaction called ===');
         const form = document.getElementById('transaction-form');
         const editingId = form.dataset.editingId;
-        console.log('Form found:', !!form, 'Editing ID:', editingId);
         
         const transactionData = {
             type: this.currentTransactionType,
@@ -635,13 +624,6 @@ class ExpenseTracker {
             date: document.getElementById('trans-date').value,
             paymentMethod: document.getElementById('trans-payment-method').value,
         };
-
-        console.log('Transaction data:', transactionData);
-        console.log('User flags:', {
-            isFirebaseUser: this.isFirebaseUser,
-            hasFirebaseIntegration: !!this.firebaseIntegration,
-            userId: this.userId
-        });
 
         if (!transactionData.amount || !transactionData.category || !transactionData.description || !transactionData.date) {
             this.showToast('Please fill in all required fields', 'error');
@@ -684,26 +666,17 @@ class ExpenseTracker {
             
             if (this.isFirebaseUser && this.firebaseIntegration) {
                 try {
-                    console.log('Adding transaction to Firebase:', transaction);
-                    console.log('Firebase integration status:', {
-                        isInitialized: this.firebaseIntegration.isInitialized,
-                        hasEncryptionKey: !!this.firebaseIntegration.encryptionManager?.encryptionKey,
-                        userId: this.userId
-                    });
-                    
                     await this.firebaseIntegration.addTransaction(this.userId, transaction);
-                    console.log('Transaction added to Firebase successfully');
             this.showToast('Transaction added successfully!', 'success');
                 } catch (error) {
                     console.error('Error adding transaction to Firebase:', error);
                     this.showToast(`Error adding transaction: ${error.message}`, 'error');
                     return;
-        }
+                }
             } else {
-                console.log('Adding transaction locally');
                 this.transactions.unshift(transaction);
                 this.showToast('Transaction added successfully!', 'success');
-        this.saveData();
+                this.saveData();
             }
         }
         this.updateDashboard();
@@ -1466,9 +1439,7 @@ class ExpenseTracker {
             
             if (this.isFirebaseUser && this.firebaseIntegration) {
                 try {
-                    console.log('Updating transaction in Firebase from All Transactions form:', editingId, updatedTransaction);
                     await this.firebaseIntegration.updateTransaction(this.userId, editingId, updatedTransaction);
-                    console.log('Transaction updated in Firebase successfully from All Transactions form');
                     this.showToast('Transaction updated successfully!', 'success');
                 } catch (error) {
                     console.error('Error updating transaction in Firebase from All Transactions form:', error);
@@ -1512,15 +1483,7 @@ class ExpenseTracker {
             // Add Firebase integration for All Transactions form
             if (this.isFirebaseUser && this.firebaseIntegration) {
                 try {
-                    console.log('Adding transaction to Firebase from All Transactions form:', transaction);
-                    console.log('Firebase integration status:', {
-                        isInitialized: this.firebaseIntegration.isInitialized,
-                        hasEncryptionKey: !!this.firebaseIntegration.encryptionManager?.encryptionKey,
-                        userId: this.userId
-                    });
-                    
                     await this.firebaseIntegration.addTransaction(this.userId, transaction);
-                    console.log('Transaction added to Firebase successfully from All Transactions form');
                     this.showToast('Transaction added successfully!', 'success');
                 } catch (error) {
                     console.error('Error adding transaction to Firebase from All Transactions form:', error);
@@ -1528,10 +1491,9 @@ class ExpenseTracker {
                     return;
                 }
             } else {
-                console.log('Adding transaction locally from All Transactions form');
-            this.transactions.unshift(transaction);
+                this.transactions.unshift(transaction);
                 this.showToast('Transaction added successfully!', 'success');
-            this.saveData();
+                this.saveData();
             }
             
             this.updateDashboard();
@@ -2018,56 +1980,10 @@ This report was generated by Business Expense Tracker
         return `${dataType}_${this.userId}`;
     }
 
-    // Test Firebase transaction (using same logic as firebase-test.html)
-    async testFirebaseTransaction() {
-        console.log('=== Testing Firebase Transaction (Direct) ===');
-        
-        if (!this.isFirebaseUser) {
-            this.showToast('Not a Firebase user', 'error');
-            return;
-        }
-        
-        if (!this.firebaseIntegration) {
-            this.showToast('Firebase integration not available', 'error');
-            return;
-        }
-        
-        try {
-            // Create test transaction using exact same logic as firebase-test.html
-            const testTransaction = {
-                id: Date.now().toString(),
-                type: 'expense',
-                amount: 99.99,  // Test amount
-                category: 'Testing',
-                description: 'Direct Firebase Test from Main App',
-                date: new Date().toISOString().split('T')[0],
-                paymentMethod: 'Test Method',
-                timestamp: new Date().toISOString()
-            };
-            
-            console.log('Test transaction data:', JSON.stringify(testTransaction, null, 2));
-            console.log('Firebase integration status:', {
-                isInitialized: this.firebaseIntegration.isInitialized,
-                hasEncryptionKey: !!this.firebaseIntegration.encryptionManager?.encryptionKey,
-                userId: this.userId
-            });
-            
-            // Call Firebase directly (same as firebase-test.html)
-            await this.firebaseIntegration.addTransaction(this.userId, testTransaction);
-            console.log('✅ Direct Firebase test transaction added successfully');
-            this.showToast('Direct Firebase test successful!', 'success');
-            
-        } catch (error) {
-            console.error('❌ Direct Firebase test failed:', error);
-            this.showToast(`Direct Firebase test failed: ${error.message}`, 'error');
-        }
-    }
 
     // Firebase Integration Methods
     async initFirebase() {
         try {
-            console.log('Initializing Firebase for user:', this.userId);
-            
             // Check if Firebase integration is available
             if (typeof FirebaseIntegration === 'undefined') {
                 throw new Error('Firebase integration not loaded');
@@ -2086,7 +2002,6 @@ This report was generated by Business Expense Tracker
             // Load data from Firebase
             this.transactions = await this.firebaseIntegration.getTransactions(this.userId);
             this.receipts = await this.firebaseIntegration.getReceipts(this.userId);
-            console.log('Firebase loaded:', this.transactions.length, 'transactions,', this.receipts.length, 'receipts');
             
             // Set up real-time sync
             this.firebaseIntegration.setupRealtimeSync(this.userId, (dataType, data) => {
@@ -2108,8 +2023,6 @@ This report was generated by Business Expense Tracker
             // Check for migration from localStorage
             await this.checkMigration();
             
-            console.log('Firebase initialization complete');
-            
         } catch (error) {
             console.error('Firebase initialization failed:', error);
             // Fallback to localStorage
@@ -2125,10 +2038,9 @@ This report was generated by Business Expense Tracker
                            localStorage.getItem(`receipts_${this.userId}`);
         
         if (hasLocalData && this.firebaseIntegration) {
-            // For Firebase users, clear localStorage without asking - we use Firebase as source of truth
+            // For Firebase users, clear localStorage - Firebase is the source of truth
             localStorage.removeItem(`transactions_${this.userId}`);
             localStorage.removeItem(`receipts_${this.userId}`);
-            console.log('Cleared localStorage for Firebase user - using cloud data');
         }
     }
 
@@ -2340,7 +2252,6 @@ This report was generated by Business Expense Tracker
         try {
             if (this.isFirebaseUser) {
                 // Firebase users: data is automatically saved through Firebase operations
-                // Don't save to localStorage to avoid conflicts
                 return;
             } else {
                 // Local users: save to localStorage
