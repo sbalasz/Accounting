@@ -102,7 +102,8 @@
         
         <div class="test-section">
             <h3>Step 3: Data Operations</h3>
-            <button onclick="testAddTransaction()">Test Add Transaction</button>
+            <button onclick="testAddTransaction()">Test Add Expense</button>
+            <button onclick="testAddIncome()">Test Add Income</button>
             <button onclick="testGetTransactions()">Test Get Transactions</button>
             <button onclick="testRealTimeSync()">Test Real-Time Sync</button>
             <div id="data-status" class="status info">Not tested</div>
@@ -233,16 +234,19 @@
                     throw new Error('Please authenticate first');
                 }
                 
+                // Create a comprehensive test transaction with all required fields
                 const testTransaction = {
                     id: Date.now().toString(),
                     type: 'expense',
-                    amount: 25.50,
-                    category: 'Food',
-                    description: 'Test transaction',
+                    amount: 25.50,  // Ensure this is a proper number
+                    category: 'Food & Dining',
+                    description: 'Firebase Test Transaction - Coffee & Lunch',
                     date: new Date().toISOString().split('T')[0],
-                    paymentMethod: 'Card',
+                    paymentMethod: 'Credit Card',
                     timestamp: new Date().toISOString()
                 };
+                
+                log('Test transaction data:', JSON.stringify(testTransaction, null, 2));
                 
                 await firebaseIntegration.addTransaction(currentUser.uid, testTransaction);
                 log('✅ Transaction added successfully');
@@ -253,6 +257,42 @@
             } catch (error) {
                 log(`❌ Add transaction failed: ${error.message}`);
                 setStatus('data-status', `❌ Add failed: ${error.message}`, 'error');
+                testResults.data = false;
+            }
+            updateOverallStatus();
+        };
+
+        window.testAddIncome = async function() {
+            try {
+                log('Testing add income transaction...');
+                
+                if (!currentUser) {
+                    throw new Error('Please authenticate first');
+                }
+                
+                // Create a comprehensive test income transaction
+                const testIncome = {
+                    id: Date.now().toString(),
+                    type: 'income',
+                    amount: 150.00,  // Ensure this is a proper number
+                    category: 'Freelance',
+                    description: 'Firebase Test Income - Freelance Payment',
+                    date: new Date().toISOString().split('T')[0],
+                    paymentMethod: 'Bank Transfer',
+                    timestamp: new Date().toISOString()
+                };
+                
+                log('Test income data:', JSON.stringify(testIncome, null, 2));
+                
+                await firebaseIntegration.addTransaction(currentUser.uid, testIncome);
+                log('✅ Income transaction added successfully');
+                
+                setStatus('data-status', '✅ Income added', 'success');
+                testResults.data = true;
+                
+            } catch (error) {
+                log(`❌ Add income failed: ${error.message}`);
+                setStatus('data-status', `❌ Add income failed: ${error.message}`, 'error');
                 testResults.data = false;
             }
             updateOverallStatus();
