@@ -15,7 +15,13 @@
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
-            <h1><i class="fas fa-calculator"></i> Business Tracker</h1>
+            <div class="header-left">
+                <h1><i class="fas fa-calculator"></i> Business Tracker</h1>
+                <div class="user-info" id="user-info">
+                    <span class="user-name" id="user-name">Loading...</span>
+                    <span class="user-role" id="user-role"></span>
+                </div>
+            </div>
             <div class="header-stats">
                 <span id="monthly-total">£0.00</span>
             </div>
@@ -42,6 +48,10 @@
             <button class="nav-btn" data-tab="export">
                 <i class="fas fa-download"></i>
                 <span>Export</span>
+            </button>
+            <button class="nav-btn" data-tab="profile">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
             </button>
         </nav>
 
@@ -551,6 +561,86 @@
                             <div class="form-group">
                                 <label for="export-to">To Date</label>
                                 <input type="date" id="export-to">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div class="tab-content" id="profile">
+                <div class="profile-section">
+                    <h2>User Profile</h2>
+                    
+                    <div class="profile-info">
+                        <div class="profile-card">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="profile-details">
+                                <h3 id="profile-name">Loading...</h3>
+                                <p id="profile-email">Loading...</p>
+                                <span class="profile-role" id="profile-role">Loading...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Total Transactions</span>
+                                <span class="stat-value" id="profile-transactions-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Total Receipts</span>
+                                <span class="stat-value" id="profile-receipts-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Account Created</span>
+                                <span class="stat-value" id="profile-created-date">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <h3>Account Actions</h3>
+                        <div class="action-buttons">
+                            <button class="btn-secondary" id="change-password-btn">
+                                <i class="fas fa-key"></i> Change Password
+                            </button>
+                            <button class="btn-secondary" id="export-profile-data">
+                                <i class="fas fa-download"></i> Export My Data
+                            </button>
+                            <button class="btn-danger" id="delete-profile-btn">
+                                <i class="fas fa-trash"></i> Delete Account
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="sharing-section" id="sharing-section">
+                        <h3>Data Sharing</h3>
+                        <p>Share your data with other users</p>
+                        
+                        <div class="share-form">
+                            <div class="form-group">
+                                <label for="share-email">User Email</label>
+                                <input type="email" id="share-email" placeholder="Enter user's email">
+                            </div>
+                            <div class="form-group">
+                                <label for="share-type">Data Type</label>
+                                <select id="share-type">
+                                    <option value="transactions">Transactions Only</option>
+                                    <option value="receipts">Receipts Only</option>
+                                    <option value="all">All Data</option>
+                                </select>
+                            </div>
+                            <button class="btn-primary" id="share-data-btn">
+                                <i class="fas fa-share"></i> Share Data
+                            </button>
+                        </div>
+                        
+                        <div class="shared-with" id="shared-with">
+                            <h4>Shared With</h4>
+                            <div id="shared-users-list">
+                                <!-- Shared users will be listed here -->
                             </div>
                         </div>
                     </div>
