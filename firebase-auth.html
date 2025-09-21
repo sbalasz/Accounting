@@ -385,6 +385,9 @@
                     // Initialize encryption with user's password
                     await encryptionManager.generateKey(password, userCredential.user.uid);
                     
+                    // Load user data with password
+                    await this.loadUserData(password);
+                    
                     this.showSuccess('Logged in successfully!');
                     setTimeout(() => {
                         window.location.href = 'index.html';
@@ -431,6 +434,9 @@
                         lastLogin: serverTimestamp()
                     });
                     
+                    // Load user data with password
+                    await this.loadUserData(password);
+                    
                     this.showSuccess('Account created successfully!');
                     setTimeout(() => {
                         window.location.href = 'index.html';
@@ -443,7 +449,7 @@
                 }
             }
             
-            async loadUserData() {
+            async loadUserData(password) {
                 if (!this.currentUser) return;
                 
                 try {
@@ -456,6 +462,7 @@
                     }));
                     sessionStorage.setItem('authenticated', 'true');
                     sessionStorage.setItem('firebaseUser', 'true');
+                    sessionStorage.setItem('firebasePassword', password);
                     
                 } catch (error) {
                     console.error('Error loading user data:', error);
