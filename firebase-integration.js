@@ -295,6 +295,59 @@ window.FirebaseIntegration = class FirebaseIntegration {
             return false;
         }
     }
+
+    // Real-time sync methods
+    setupRealtimeSync(userId, onDataChange) {
+        if (!this.isInitialized) {
+            console.error('Firebase not initialized for real-time sync');
+            return;
+        }
+
+        // Import onSnapshot for real-time updates
+        import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js').then(({ collection, onSnapshot }) => {
+            // Listen for transaction changes
+            const transactionsRef = collection(this.db, 'users', userId, 'transactions');
+            onSnapshot(transactionsRef, async (snapshot) => {
+                const transactions = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    try {
+                        const decryptedData = await this.encryptionManager.decrypt(data.data);
+                        transactions.push({
+                            id: doc.id,
+                            ...decryptedData
+                        });
+                    } catch (error) {
+                        console.error('Error decrypting transaction:', error);
+                    }
+                });
+                
+                onDataChange('transactions', transactions);
+            });
+
+            // Listen for receipt changes
+            const receiptsRef = collection(this.db, 'users', userId, 'receipts');
+            onSnapshot(receiptsRef, async (snapshot) => {
+                const receipts = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    try {
+                        const decryptedData = await this.encryptionManager.decrypt(data.data);
+                        receipts.push({
+                            id: doc.id,
+                            ...decryptedData
+                        });
+                    } catch (error) {
+                        console.error('Error decrypting receipt:', error);
+                    }
+                });
+                
+                onDataChange('receipts', receipts);
+            });
+        }).catch(error => {
+            console.error('Error setting up real-time sync:', error);
+        });
+    }
 };
 
 // Make EncryptionManager globally available too
