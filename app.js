@@ -1454,29 +1454,48 @@ class ExpenseTracker {
 
         if (editingId) {
             // Update existing transaction
-            const transactionIndex = this.transactions.findIndex(t => t.id === editingId);
-            if (transactionIndex !== -1) {
-                this.transactions[transactionIndex] = {
-                    ...this.transactions[transactionIndex],
-                    type: this.currentTransactionType,
-                    amount: amount,
-                    category: category,
-                    description: description,
-                    date: date,
-                    paymentMethod: paymentMethod
-                };
-                
-                this.saveData();
-                this.updateDashboard();
-                this.renderTransactions();
-                this.renderAllTransactions();
-                this.updateChart();
-                this.updateFilterCategories();
-                this.updateAllTransactionsStats();
-                
-                this.cancelAllTransaction();
-                this.showToast('Transaction updated successfully!', 'success');
+            const updatedTransaction = {
+                type: this.currentTransactionType,
+                amount: amount,
+                category: category,
+                description: description,
+                date: date,
+                paymentMethod: paymentMethod,
+                timestamp: new Date().toISOString()
+            };
+            
+            if (this.isFirebaseUser && this.firebaseIntegration) {
+                try {
+                    console.log('Updating transaction in Firebase from All Transactions form:', editingId, updatedTransaction);
+                    await this.firebaseIntegration.updateTransaction(this.userId, editingId, updatedTransaction);
+                    console.log('Transaction updated in Firebase successfully from All Transactions form');
+                    this.showToast('Transaction updated successfully!', 'success');
+                } catch (error) {
+                    console.error('Error updating transaction in Firebase from All Transactions form:', error);
+                    this.showToast(`Error updating transaction: ${error.message}`, 'error');
+                    return;
+                }
+            } else {
+                // Local update
+                const transactionIndex = this.transactions.findIndex(t => t.id === editingId);
+                if (transactionIndex !== -1) {
+                    this.transactions[transactionIndex] = {
+                        ...this.transactions[transactionIndex],
+                        ...updatedTransaction
+                    };
+                    this.saveData();
+                    this.showToast('Transaction updated successfully!', 'success');
+                }
             }
+            
+            this.updateDashboard();
+            this.renderTransactions();
+            this.renderAllTransactions();
+            this.updateChart();
+            this.updateFilterCategories();
+            this.updateAllTransactionsStats();
+            
+            this.cancelAllTransaction();
         } else {
             // Add new transaction
             const transaction = {
@@ -1490,8 +1509,30 @@ class ExpenseTracker {
                 timestamp: new Date().toISOString()
             };
 
-            this.transactions.unshift(transaction);
-            this.saveData();
+            // Add Firebase integration for All Transactions form
+            if (this.isFirebaseUser && this.firebaseIntegration) {
+                try {
+                    console.log('Adding transaction to Firebase from All Transactions form:', transaction);
+                    console.log('Firebase integration status:', {
+                        isInitialized: this.firebaseIntegration.isInitialized,
+                        hasEncryptionKey: !!this.firebaseIntegration.encryptionManager?.encryptionKey,
+                        userId: this.userId
+                    });
+                    
+                    await this.firebaseIntegration.addTransaction(this.userId, transaction);
+                    console.log('Transaction added to Firebase successfully from All Transactions form');
+                    this.showToast('Transaction added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error adding transaction to Firebase from All Transactions form:', error);
+                    this.showToast(`Error adding transaction: ${error.message}`, 'error');
+                    return;
+                }
+            } else {
+                console.log('Adding transaction locally from All Transactions form');
+                this.transactions.unshift(transaction);
+                this.showToast('Transaction added successfully!', 'success');
+                this.saveData();
+            }
             
             this.updateDashboard();
             this.renderTransactions();
@@ -1501,7 +1542,6 @@ class ExpenseTracker {
             this.updateAllTransactionsStats();
             
             this.cancelAllTransaction();
-            this.showToast('Transaction added successfully!', 'success');
         }
     }
 
