@@ -617,8 +617,10 @@ class ExpenseTracker {
     }
 
     async addTransaction() {
+        console.log('=== addTransaction called ===');
         const form = document.getElementById('transaction-form');
         const editingId = form.dataset.editingId;
+        console.log('Form found:', !!form, 'Editing ID:', editingId);
         
         const transactionData = {
             type: this.currentTransactionType,
@@ -628,6 +630,13 @@ class ExpenseTracker {
             date: document.getElementById('trans-date').value,
             paymentMethod: document.getElementById('trans-payment-method').value,
         };
+
+        console.log('Transaction data:', transactionData);
+        console.log('User flags:', {
+            isFirebaseUser: this.isFirebaseUser,
+            hasFirebaseIntegration: !!this.firebaseIntegration,
+            userId: this.userId
+        });
 
         if (!transactionData.amount || !transactionData.category || !transactionData.description || !transactionData.date) {
             this.showToast('Please fill in all required fields', 'error');

@@ -181,19 +181,27 @@ window.FirebaseIntegration = class FirebaseIntegration {
             const snapshot = await this.db.collection('users').doc(userId).collection('transactions').get();
             
             const transactions = [];
+            const decryptPromises = [];
+            
             snapshot.forEach(doc => {
                 const data = doc.data();
-                try {
-                    if (data.plain && data.value) {
-                        transactions.push({ id: doc.id, ...data.value });
-                    } else if (data.data) {
-                        const decryptedData = this.encryptionManager.decrypt(data.data);
-                        transactions.push({ id: doc.id, ...decryptedData });
-                    }
-                } catch (decryptError) {
-                    console.error('Error reading transaction:', decryptError);
+                if (data.plain && data.value) {
+                    transactions.push({ id: doc.id, ...data.value });
+                } else if (data.data) {
+                    decryptPromises.push(
+                        this.encryptionManager.decrypt(data.data)
+                            .then(decryptedData => ({ id: doc.id, ...decryptedData }))
+                            .catch(decryptError => {
+                                console.error('Error decrypting transaction:', decryptError);
+                                return null;
+                            })
+                    );
                 }
             });
+            
+            // Wait for all decryptions to complete
+            const decryptedTransactions = await Promise.all(decryptPromises);
+            transactions.push(...decryptedTransactions.filter(t => t !== null));
             
             return transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         } catch (error) {
@@ -361,21 +369,29 @@ window.FirebaseIntegration = class FirebaseIntegration {
         this.db.collection('users').doc(userId).collection('transactions')
             .onSnapshot(async (snapshot) => {
                 const transactions = [];
+                const decryptPromises = [];
+                
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    try {
-                        if (data.plain && data.value) {
-                            transactions.push({ id: doc.id, ...data.value });
-                        } else if (data.data) {
-                            const decryptedData = this.encryptionManager.decrypt(data.data);
-                            transactions.push({ id: doc.id, ...decryptedData });
-                        }
-                    } catch (error) {
-                        console.error('Error reading transaction in real-time sync:', error);
+                    if (data.plain && data.value) {
+                        transactions.push({ id: doc.id, ...data.value });
+                    } else if (data.data) {
+                        decryptPromises.push(
+                            this.encryptionManager.decrypt(data.data)
+                                .then(decryptedData => ({ id: doc.id, ...decryptedData }))
+                                .catch(error => {
+                                    console.error('Error decrypting transaction in real-time sync:', error);
+                                    return null;
+                                })
+                        );
                     }
                 });
                 
-                onDataChange('transactions', transactions);
+                // Wait for all decryptions to complete
+                const decryptedTransactions = await Promise.all(decryptPromises);
+                transactions.push(...decryptedTransactions.filter(t => t !== null));
+                
+                onDataChange('transactions', transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
             });
 
         // Listen for receipt changes
