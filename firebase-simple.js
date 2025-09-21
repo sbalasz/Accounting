@@ -126,10 +126,13 @@ window.FirebaseIntegration = class FirebaseIntegration {
         }
 
         try {
-            const encryptedData = await this.encryptionManager.encrypt(transaction);
+            const hasKey = !!this.encryptionManager.encryptionKey;
+            const payload = hasKey
+                ? { data: await this.encryptionManager.encrypt(transaction) }
+                : { plain: true, value: transaction };
             
             await this.db.collection('users').doc(userId).collection('transactions').add({
-                data: encryptedData,
+                ...payload,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -153,18 +156,14 @@ window.FirebaseIntegration = class FirebaseIntegration {
             snapshot.forEach(doc => {
                 const data = doc.data();
                 try {
-                    const decryptedData = this.encryptionManager.decrypt(data.data);
-                    transactions.push({
-                        id: doc.id,
-                        ...decryptedData
-                    });
+                    if (data.plain && data.value) {
+                        transactions.push({ id: doc.id, ...data.value });
+                    } else if (data.data) {
+                        const decryptedData = this.encryptionManager.decrypt(data.data);
+                        transactions.push({ id: doc.id, ...decryptedData });
+                    }
                 } catch (decryptError) {
-                    console.error('Error decrypting transaction:', decryptError);
-                    // If decryption fails, try to return the raw data
-                    transactions.push({
-                        id: doc.id,
-                        ...data.data
-                    });
+                    console.error('Error reading transaction:', decryptError);
                 }
             });
             
@@ -181,10 +180,13 @@ window.FirebaseIntegration = class FirebaseIntegration {
         }
 
         try {
-            const encryptedData = await this.encryptionManager.encrypt(receipt);
+            const hasKey = !!this.encryptionManager.encryptionKey;
+            const payload = hasKey
+                ? { data: await this.encryptionManager.encrypt(receipt) }
+                : { plain: true, value: receipt };
             
             await this.db.collection('users').doc(userId).collection('receipts').add({
-                data: encryptedData,
+                ...payload,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -206,21 +208,17 @@ window.FirebaseIntegration = class FirebaseIntegration {
             
             const receipts = [];
             snapshot.forEach(doc => {
-                const data = doc.data();
-                try {
+            const data = doc.data();
+            try {
+                if (data.plain && data.value) {
+                    receipts.push({ id: doc.id, ...data.value });
+                } else if (data.data) {
                     const decryptedData = this.encryptionManager.decrypt(data.data);
-                    receipts.push({
-                        id: doc.id,
-                        ...decryptedData
-                    });
-                } catch (decryptError) {
-                    console.error('Error decrypting receipt:', decryptError);
-                    // If decryption fails, try to return the raw data
-                    receipts.push({
-                        id: doc.id,
-                        ...data.data
-                    });
+                    receipts.push({ id: doc.id, ...decryptedData });
                 }
+            } catch (decryptError) {
+                console.error('Error reading receipt:', decryptError);
+            }
             });
             
             return receipts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -338,18 +336,14 @@ window.FirebaseIntegration = class FirebaseIntegration {
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     try {
-                        const decryptedData = this.encryptionManager.decrypt(data.data);
-                        transactions.push({
-                            id: doc.id,
-                            ...decryptedData
-                        });
+                        if (data.plain && data.value) {
+                            transactions.push({ id: doc.id, ...data.value });
+                        } else if (data.data) {
+                            const decryptedData = this.encryptionManager.decrypt(data.data);
+                            transactions.push({ id: doc.id, ...decryptedData });
+                        }
                     } catch (error) {
-                        console.error('Error decrypting transaction in real-time sync:', error);
-                        // If decryption fails, try to return the raw data
-                        transactions.push({
-                            id: doc.id,
-                            ...data.data
-                        });
+                        console.error('Error reading transaction in real-time sync:', error);
                     }
                 });
                 
@@ -363,18 +357,14 @@ window.FirebaseIntegration = class FirebaseIntegration {
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     try {
-                        const decryptedData = this.encryptionManager.decrypt(data.data);
-                        receipts.push({
-                            id: doc.id,
-                            ...decryptedData
-                        });
+                        if (data.plain && data.value) {
+                            receipts.push({ id: doc.id, ...data.value });
+                        } else if (data.data) {
+                            const decryptedData = this.encryptionManager.decrypt(data.data);
+                            receipts.push({ id: doc.id, ...decryptedData });
+                        }
                     } catch (error) {
-                        console.error('Error decrypting receipt in real-time sync:', error);
-                        // If decryption fails, try to return the raw data
-                        receipts.push({
-                            id: doc.id,
-                            ...data.data
-                        });
+                        console.error('Error reading receipt in real-time sync:', error);
                     }
                 });
                 
