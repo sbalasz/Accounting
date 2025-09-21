@@ -1,20 +1,20 @@
-// Firebase Configuration
-// Replace these with your actual Firebase project credentials
-const firebaseConfig = {
-    apiKey: "your-api-key-here",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "your-app-id"
-};
-
-// Initialize Firebase
-import { initializeApp } from 'firebase/app';
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyB36Qd7FG3ztdOvnqBiix1kF_gN6JJSdjA",
+  authDomain: "business-tracker-app-33c3d.firebaseapp.com",
+  projectId: "business-tracker-app-33c3d",
+  storageBucket: "business-tracker-app-33c3d.firebasestorage.app",
+  messagingSenderId: "965528133229",
+  appId: "1:965528133229:web:92d0ab17808e5ec11da964"
+};
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
