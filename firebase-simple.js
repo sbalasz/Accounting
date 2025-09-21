@@ -25,8 +25,6 @@ window.FirebaseIntegration = class FirebaseIntegration {
 
     async initialize() {
         try {
-            console.log('Starting Firebase initialization...');
-            
             // Load Firebase SDKs
             await this.loadFirebaseSDKs();
             
@@ -39,20 +37,15 @@ window.FirebaseIntegration = class FirebaseIntegration {
                 throw new Error('firebase.firestore is not available - Firestore SDK not loaded properly');
             }
             
-            console.log('Firebase SDKs verified, initializing app...');
-            
             // Initialize Firebase
             app = firebase.initializeApp(firebaseConfig);
             this.auth = firebase.auth();
             this.db = firebase.firestore();
             
-            console.log('Firebase services initialized, setting up encryption...');
-            
             // Initialize encryption manager
             this.encryptionManager = new EncryptionManager();
             
             this.isInitialized = true;
-            console.log('Firebase initialization complete');
             
         } catch (error) {
             console.error('Firebase initialization failed:', error);
@@ -66,12 +59,9 @@ window.FirebaseIntegration = class FirebaseIntegration {
             if (typeof firebase !== 'undefined' && 
                 typeof firebase.firestore === 'function' && 
                 typeof firebase.auth === 'function') {
-                console.log('Firebase SDKs already loaded.');
                 resolve();
                 return;
             }
-
-            console.log('Loading Firebase SDKs...');
             // Load Firebase SDKs using compat builds for global namespace
             const script1 = document.createElement('script');
             script1.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js';
@@ -82,7 +72,6 @@ window.FirebaseIntegration = class FirebaseIntegration {
                     const script3 = document.createElement('script');
                     script3.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js';
                     script3.onload = () => {
-                        console.log('All Firebase SDKs loaded.');
                         resolve();
                     };
                     script3.onerror = () => reject(new Error('Failed to load Firestore compat SDK'));
@@ -141,22 +130,16 @@ window.FirebaseIntegration = class FirebaseIntegration {
     }
 
     async addTransaction(userId, transaction) {
-        console.log('Firebase addTransaction called:', { userId, transaction });
-        
         if (!this.isInitialized) {
-            console.log('Firebase not initialized, initializing now...');
             await this.initialize();
         }
 
         try {
             const hasKey = !!this.encryptionManager.encryptionKey;
-            console.log('Encryption key available:', hasKey);
             
             const payload = hasKey
                 ? { data: await this.encryptionManager.encrypt(transaction) }
                 : { plain: true, value: transaction };
-            
-            console.log('Saving to Firestore with payload:', { ...payload, userId });
             
             const docRef = await this.db.collection('users').doc(userId).collection('transactions').add({
                 ...payload,
@@ -164,7 +147,6 @@ window.FirebaseIntegration = class FirebaseIntegration {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            console.log('Transaction saved to Firestore with ID:', docRef.id);
             return true;
         } catch (error) {
             console.error('Error adding transaction to Firestore:', error);
