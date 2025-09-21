@@ -121,25 +121,33 @@ window.FirebaseIntegration = class FirebaseIntegration {
     }
 
     async addTransaction(userId, transaction) {
+        console.log('Firebase addTransaction called:', { userId, transaction });
+        
         if (!this.isInitialized) {
+            console.log('Firebase not initialized, initializing now...');
             await this.initialize();
         }
 
         try {
             const hasKey = !!this.encryptionManager.encryptionKey;
+            console.log('Encryption key available:', hasKey);
+            
             const payload = hasKey
                 ? { data: await this.encryptionManager.encrypt(transaction) }
                 : { plain: true, value: transaction };
             
-            await this.db.collection('users').doc(userId).collection('transactions').add({
+            console.log('Saving to Firestore with payload:', { ...payload, userId });
+            
+            const docRef = await this.db.collection('users').doc(userId).collection('transactions').add({
                 ...payload,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             
+            console.log('Transaction saved to Firestore with ID:', docRef.id);
             return true;
         } catch (error) {
-            console.error('Error adding transaction:', error);
+            console.error('Error adding transaction to Firestore:', error);
             throw error;
         }
     }
