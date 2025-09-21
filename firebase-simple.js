@@ -25,19 +25,34 @@ window.FirebaseIntegration = class FirebaseIntegration {
 
     async initialize() {
         try {
+            console.log('Starting Firebase initialization...');
+            
             // Load Firebase SDKs
             await this.loadFirebaseSDKs();
+            
+            // Check if Firebase is available after loading
+            if (typeof firebase === 'undefined') {
+                throw new Error('Firebase global object not available after SDK loading');
+            }
+            
+            if (typeof firebase.firestore !== 'function') {
+                throw new Error('firebase.firestore is not available - Firestore SDK not loaded properly');
+            }
+            
+            console.log('Firebase SDKs verified, initializing app...');
             
             // Initialize Firebase
             app = firebase.initializeApp(firebaseConfig);
             this.auth = firebase.auth();
             this.db = firebase.firestore();
             
+            console.log('Firebase services initialized, setting up encryption...');
+            
             // Initialize encryption manager
             this.encryptionManager = new EncryptionManager();
             
             this.isInitialized = true;
-            console.log('Firebase initialized successfully');
+            console.log('Firebase initialization complete');
             
         } catch (error) {
             console.error('Firebase initialization failed:', error);
@@ -47,13 +62,17 @@ window.FirebaseIntegration = class FirebaseIntegration {
 
     async loadFirebaseSDKs() {
         return new Promise((resolve, reject) => {
-            // Check if Firebase is already loaded
-            if (typeof firebase !== 'undefined') {
+            // Check if Firebase is already loaded with all required services
+            if (typeof firebase !== 'undefined' && 
+                typeof firebase.firestore === 'function' && 
+                typeof firebase.auth === 'function') {
+                console.log('Firebase SDKs already loaded.');
                 resolve();
                 return;
             }
 
-            // Load Firebase SDKs (compat builds for global firebase namespace)
+            console.log('Loading Firebase SDKs...');
+            // Load Firebase SDKs using compat builds for global namespace
             const script1 = document.createElement('script');
             script1.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js';
             script1.onload = () => {
@@ -63,15 +82,16 @@ window.FirebaseIntegration = class FirebaseIntegration {
                     const script3 = document.createElement('script');
                     script3.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js';
                     script3.onload = () => {
+                        console.log('All Firebase SDKs loaded.');
                         resolve();
                     };
-                    script3.onerror = () => reject(new Error('Failed to load Firestore'));
+                    script3.onerror = () => reject(new Error('Failed to load Firestore compat SDK'));
                     document.head.appendChild(script3);
                 };
-                script2.onerror = () => reject(new Error('Failed to load Auth'));
+                script2.onerror = () => reject(new Error('Failed to load Auth compat SDK'));
                 document.head.appendChild(script2);
             };
-            script1.onerror = () => reject(new Error('Failed to load Firebase App'));
+            script1.onerror = () => reject(new Error('Failed to load Firebase App compat SDK'));
             document.head.appendChild(script1);
         });
     }
