@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Tracker - User Access</title>
+    <title>Business Tracker - Secure Cloud Access</title>
     <style>
         * {
             margin: 0;
@@ -47,6 +47,17 @@
             color: #666;
             margin-bottom: 2rem;
             font-size: 1rem;
+        }
+        
+        .cloud-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: inline-block;
         }
         
         .auth-tabs {
@@ -156,100 +167,68 @@
             display: none;
         }
         
-        .admin-access {
+        .features {
             margin-top: 2rem;
             padding: 1rem;
             background: #f8f9fa;
             border-radius: 8px;
             font-size: 0.9rem;
             color: #666;
-        }
-        
-        .admin-access h3 {
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-        
-        .admin-link {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .admin-link:hover {
-            text-decoration: underline;
-        }
-        
-        .user-list {
-            margin-top: 1rem;
             text-align: left;
         }
         
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .user-item:last-child {
-            border-bottom: none;
-        }
-        
-        .user-info {
-            flex: 1;
-        }
-        
-        .user-name {
-            font-weight: 500;
+        .features h3 {
             color: #333;
+            margin-bottom: 0.5rem;
+            text-align: center;
         }
         
-        .user-email {
-            font-size: 0.8rem;
-            color: #666;
+        .features ul {
+            list-style: none;
+            padding: 0;
         }
         
-        .user-actions {
+        .features li {
+            padding: 0.25rem 0;
             display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
         
-        .action-btn {
-            background: none;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: background-color 0.2s ease;
-        }
-        
-        .action-btn.login {
+        .features li::before {
+            content: "✓";
             color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
+            font-weight: bold;
         }
         
-        .action-btn.login:hover {
-            background: rgba(16, 185, 129, 0.2);
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
         }
         
-        .action-btn.delete {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
         
-        .action-btn.delete:hover {
-            background: rgba(239, 68, 68, 0.2);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <div class="logo">👥</div>
+        <div class="logo">☁️</div>
         <h1>Business Tracker</h1>
-        <p class="subtitle">Multi-User Access</p>
+        <p class="subtitle">Secure Cloud Access</p>
+        <div class="cloud-badge">🔒 Encrypted & Synced</div>
         
         <div class="auth-tabs">
             <button class="tab-btn active" data-tab="login">Login</button>
@@ -267,15 +246,8 @@
                     <label for="login-password">Password</label>
                     <input type="password" id="login-password" placeholder="Enter your password" required>
                 </div>
-                <button type="submit" class="btn">Login</button>
+                <button type="submit" class="btn">Login to Cloud</button>
             </form>
-            
-            <div class="user-list" id="existing-users">
-                <h4>Existing Users</h4>
-                <div id="users-list">
-                    <!-- Users will be populated here -->
-                </div>
-            </div>
         </div>
         
         <!-- Register Tab -->
@@ -297,32 +269,67 @@
                     <label for="register-confirm">Confirm Password</label>
                     <input type="password" id="register-confirm" placeholder="Confirm your password" required>
                 </div>
-                <button type="submit" class="btn">Create Account</button>
+                <button type="submit" class="btn">Create Cloud Account</button>
             </form>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Connecting to secure cloud...</p>
         </div>
         
         <div id="error" class="error"></div>
         <div id="success" class="success"></div>
         
-        <div class="admin-access">
-            <h3>Admin Access</h3>
-            <p>Administrators can access the system with the master code:</p>
-            <a href="#" class="admin-link" id="admin-access">Admin1905</a> | 
-            <a href="firebase-auth.html" class="admin-link" style="color: #10b981;">☁️ Cloud Access</a>
+        <div class="features">
+            <h3>Cloud Features</h3>
+            <ul>
+                <li>Access from any device or browser</li>
+                <li>End-to-end encryption for all data</li>
+                <li>Real-time sync across devices</li>
+                <li>Automatic backup and recovery</li>
+                <li>Offline support with sync when online</li>
+            </ul>
         </div>
     </div>
 
-    <script>
-        class UserAuth {
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { auth, db, encryptionManager } from './firebase-config.js';
+        import { 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut
+        } from 'firebase/auth';
+        import { 
+            doc, 
+            setDoc, 
+            getDoc, 
+            collection, 
+            addDoc,
+            updateDoc,
+            serverTimestamp 
+        } from 'firebase/firestore';
+
+        class FirebaseAuth {
             constructor() {
-                this.users = JSON.parse(localStorage.getItem('businessTrackerUsers')) || [];
                 this.currentUser = null;
                 this.init();
             }
             
             init() {
                 this.setupEventListeners();
-                this.renderExistingUsers();
+                
+                // Check if user is already logged in
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        this.currentUser = user;
+                        this.loadUserData();
+                    } else {
+                        this.currentUser = null;
+                    }
+                });
             }
             
             setupEventListeners() {
@@ -344,12 +351,6 @@
                     e.preventDefault();
                     this.handleRegister();
                 });
-                
-                // Admin access
-                document.getElementById('admin-access').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.handleAdminAccess();
-                });
             }
             
             switchTab(tab) {
@@ -369,20 +370,32 @@
                 this.clearMessages();
             }
             
-            handleLogin() {
+            async handleLogin() {
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
                 
-                const user = this.users.find(u => u.email === email && u.password === password);
+                this.showLoading(true);
                 
-                if (user) {
-                    this.loginUser(user);
-                } else {
-                    this.showError('Invalid email or password');
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    this.currentUser = userCredential.user;
+                    
+                    // Initialize encryption with user's password
+                    await encryptionManager.generateKey(password, userCredential.user.uid);
+                    
+                    this.showSuccess('Logged in successfully!');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                    
+                } catch (error) {
+                    this.showError(this.getErrorMessage(error.code));
+                } finally {
+                    this.showLoading(false);
                 }
             }
             
-            handleRegister() {
+            async handleRegister() {
                 const name = document.getElementById('register-name').value;
                 const email = document.getElementById('register-email').value;
                 const password = document.getElementById('register-password').value;
@@ -399,90 +412,73 @@
                     return;
                 }
                 
-                if (this.users.find(u => u.email === email)) {
-                    this.showError('Email already exists');
-                    return;
-                }
+                this.showLoading(true);
                 
-                // Create new user
-                const newUser = {
-                    id: Date.now().toString(),
-                    name: name,
-                    email: email,
-                    password: password,
-                    createdAt: new Date().toISOString(),
-                    isAdmin: false
-                };
-                
-                this.users.push(newUser);
-                localStorage.setItem('businessTrackerUsers', JSON.stringify(this.users));
-                
-                this.showSuccess('Account created successfully! You can now login.');
-                this.switchTab('login');
-                this.renderExistingUsers();
-                
-                // Clear form
-                document.getElementById('registerForm').reset();
-            }
-            
-            handleAdminAccess() {
-                const adminCode = prompt('Enter admin access code:');
-                if (adminCode === 'Admin1905') {
-                    this.loginUser({
-                        id: 'admin',
-                        name: 'Administrator',
-                        email: 'admin@business-tracker.com',
-                        isAdmin: true
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    this.currentUser = userCredential.user;
+                    
+                    // Initialize encryption with user's password
+                    await encryptionManager.generateKey(password, userCredential.user.uid);
+                    
+                    // Create user profile in Firestore
+                    await setDoc(doc(db, 'users', userCredential.user.uid), {
+                        name: name,
+                        email: email,
+                        createdAt: serverTimestamp(),
+                        lastLogin: serverTimestamp()
                     });
-                } else {
-                    this.showError('Invalid admin code');
+                    
+                    this.showSuccess('Account created successfully!');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                    
+                } catch (error) {
+                    this.showError(this.getErrorMessage(error.code));
+                } finally {
+                    this.showLoading(false);
                 }
             }
             
-            loginUser(user) {
-                // Store current user session
-                sessionStorage.setItem('currentUser', JSON.stringify(user));
-                sessionStorage.setItem('authenticated', 'true');
+            async loadUserData() {
+                if (!this.currentUser) return;
                 
-                // Redirect to main app
-                window.location.href = 'index.html';
-            }
-            
-            renderExistingUsers() {
-                const usersList = document.getElementById('users-list');
-                usersList.innerHTML = '';
-                
-                this.users.forEach(user => {
-                    const userItem = document.createElement('div');
-                    userItem.className = 'user-item';
-                    userItem.innerHTML = `
-                        <div class="user-info">
-                            <div class="user-name">${user.name}</div>
-                            <div class="user-email">${user.email}</div>
-                        </div>
-                        <div class="user-actions">
-                            <button class="action-btn login" onclick="userAuth.loginAsUser('${user.email}')">Login</button>
-                            <button class="action-btn delete" onclick="userAuth.deleteUser('${user.id}')">Delete</button>
-                        </div>
-                    `;
-                    usersList.appendChild(userItem);
-                });
-            }
-            
-            loginAsUser(email) {
-                const user = this.users.find(u => u.email === email);
-                if (user) {
-                    this.loginUser(user);
+                try {
+                    // Store user info in sessionStorage for the main app
+                    sessionStorage.setItem('currentUser', JSON.stringify({
+                        id: this.currentUser.uid,
+                        name: this.currentUser.displayName || 'User',
+                        email: this.currentUser.email,
+                        isAdmin: false
+                    }));
+                    sessionStorage.setItem('authenticated', 'true');
+                    sessionStorage.setItem('firebaseUser', 'true');
+                    
+                } catch (error) {
+                    console.error('Error loading user data:', error);
                 }
             }
             
-            deleteUser(userId) {
-                if (confirm('Are you sure you want to delete this user? This will remove all their data.')) {
-                    this.users = this.users.filter(u => u.id !== userId);
-                    localStorage.setItem('businessTrackerUsers', JSON.stringify(this.users));
-                    this.renderExistingUsers();
-                    this.showSuccess('User deleted successfully');
+            getErrorMessage(errorCode) {
+                switch (errorCode) {
+                    case 'auth/user-not-found':
+                        return 'No account found with this email';
+                    case 'auth/wrong-password':
+                        return 'Incorrect password';
+                    case 'auth/email-already-in-use':
+                        return 'Email already registered';
+                    case 'auth/weak-password':
+                        return 'Password is too weak';
+                    case 'auth/invalid-email':
+                        return 'Invalid email address';
+                    default:
+                        return 'Authentication failed. Please try again.';
                 }
+            }
+            
+            showLoading(show) {
+                document.getElementById('loading').style.display = show ? 'block' : 'none';
             }
             
             showError(message) {
@@ -505,8 +501,8 @@
             }
         }
         
-        // Initialize user authentication system
-        const userAuth = new UserAuth();
+        // Initialize Firebase authentication
+        const firebaseAuth = new FirebaseAuth();
         
         // Check if already authenticated
         if (sessionStorage.getItem('authenticated') === 'true') {
