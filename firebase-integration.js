@@ -1,7 +1,8 @@
 // Firebase Integration for Business Tracker
 // This file provides Firebase functionality for the main app
 
-class FirebaseIntegration {
+// Make FirebaseIntegration globally available
+window.FirebaseIntegration = class FirebaseIntegration {
     constructor() {
         this.auth = null;
         this.db = null;
@@ -167,6 +168,7 @@ class FirebaseIntegration {
 
     async getReceipts(userId) {
         if (!this.isInitialized) {
+            await this.isInitialized) {
             await this.initialize();
         }
 
@@ -293,10 +295,10 @@ class FirebaseIntegration {
             return false;
         }
     }
-}
+};
 
-// Encryption Manager
-class EncryptionManager {
+// Make EncryptionManager globally available too
+window.EncryptionManager = class EncryptionManager {
     constructor() {
         this.encryptionKey = null;
     }
@@ -366,7 +368,4 @@ class EncryptionManager {
         const decoder = new TextDecoder();
         return JSON.parse(decoder.decode(decryptedData));
     }
-}
-
-// Export for global use
-window.FirebaseIntegration = FirebaseIntegration;
+};

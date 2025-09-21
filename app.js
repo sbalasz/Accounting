@@ -42,13 +42,22 @@ class ExpenseTracker {
             all: new Set()
         };
         
-        this.initDatabase().then(() => {
-
-        this.init();
-        }).catch((error) => {
-            console.error('Database init failed, continuing with basic init:', error);
-            this.init();
-        });
+        // Initialize Firebase first if it's a Firebase user
+        if (this.isFirebaseUser) {
+            this.initFirebase().then(() => {
+                this.init();
+            }).catch((error) => {
+                console.error('Firebase init failed, continuing with basic init:', error);
+                this.init();
+            });
+        } else {
+            this.initDatabase().then(() => {
+                this.init();
+            }).catch((error) => {
+                console.error('Database init failed, continuing with basic init:', error);
+                this.init();
+            });
+        }
     }
 
     async initDatabase() {
