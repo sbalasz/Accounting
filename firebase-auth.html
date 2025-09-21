@@ -373,8 +373,8 @@
                 this.showLoading(true);
                 
                 try {
-                    const userCredential = await this.firebaseIntegration.signInWithEmailAndPassword(email, password);
-                    this.currentUser = userCredential.user;
+                    const user = await this.firebaseIntegration.signInWithEmailAndPassword(email, password);
+                    this.currentUser = user;
                     
                     // Load user data with password
                     await this.loadUserData(password);
@@ -411,20 +411,12 @@
                 this.showLoading(true);
                 
                 try {
-                    const userCredential = await this.firebaseIntegration.createUserWithEmailAndPassword(email, password);
-                    this.currentUser = userCredential.user;
+                    const user = await this.firebaseIntegration.createUserWithEmailAndPassword(email, password, name);
+                    this.currentUser = user;
                     
                     // Update the user's display name
                     await firebase.auth().currentUser.updateProfile({
                         displayName: name
-                    });
-                    
-                    // Create user profile in Firestore
-                    await firebase.firestore().collection('users').doc(userCredential.user.uid).set({
-                        name: name,
-                        email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
                     // Load user data with password
