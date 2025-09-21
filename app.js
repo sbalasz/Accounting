@@ -56,9 +56,9 @@ class ExpenseTracker {
     startInitialization() {
         // Check if essential DOM elements exist before proceeding
         const essentialElements = [
-            'transactions-container',
+            'recent-list',
             'dashboard',
-            'nav-buttons'
+            'all-transactions-container'
         ];
         
         const missingElements = essentialElements.filter(id => !document.getElementById(id));
@@ -679,17 +679,17 @@ class ExpenseTracker {
                     
                     await this.firebaseIntegration.addTransaction(this.userId, transaction);
                     console.log('Transaction added to Firebase successfully');
-            this.showToast('Transaction added successfully!', 'success');
+                    this.showToast('Transaction added successfully!', 'success');
                 } catch (error) {
                     console.error('Error adding transaction to Firebase:', error);
                     this.showToast(`Error adding transaction: ${error.message}`, 'error');
                     return;
-        }
+                }
             } else {
                 console.log('Adding transaction locally');
                 this.transactions.unshift(transaction);
                 this.showToast('Transaction added successfully!', 'success');
-        this.saveData();
+                this.saveData();
             }
         }
         this.updateDashboard();
@@ -1536,12 +1536,12 @@ class ExpenseTracker {
     }
 
     renderTransactions() {
-        const container = document.getElementById('transactions-container');
+        const container = document.getElementById('recent-list');
         
         if (!container) {
             // Only log this error once to avoid spam
             if (!this.containerErrorLogged) {
-                console.warn('Transactions container not found - UI may not be ready yet');
+                console.warn('Recent transactions container not found - UI may not be ready yet');
                 this.containerErrorLogged = true;
             }
             return;
